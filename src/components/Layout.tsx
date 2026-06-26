@@ -33,7 +33,7 @@ export const Layout = () => {
                 isActive ? 'nav-link is-active' : 'nav-link'
               }
             >
-              Tenants
+              Platform
             </NavLink>
           ) : (
             <>

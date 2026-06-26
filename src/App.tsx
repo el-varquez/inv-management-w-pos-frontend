@@ -4,7 +4,8 @@ import { RoleRoute } from './components/RoleRoute';
 import { Layout } from './components/Layout';
 import { LoginScreen } from './features/auth/screens/LoginScreen';
 import { RegisterScreen } from './features/auth/screens/RegisterScreen';
-import { PlatformScreen } from './features/platform/screens/PlatformScreen';
+import { TenantsScreen } from './features/platform/screens/TenantsScreen';
+import { TenantDetailScreen } from './features/platform/screens/TenantDetailScreen';
 import { ItemsScreen } from './features/items/screens/ItemsScreen';
 import { CategoriesScreen } from './features/items/screens/CategoriesScreen';
 import { StockLevelsScreen } from './features/inventory/screens/StockLevelsScreen';
@@ -33,7 +34,15 @@ export default function App() {
                 <RoleRoute allow={(r) => r === 'SuperAdmin'} redirectTo="/items" />
               }
             >
-              <Route path="/platform" element={<PlatformScreen />} />
+              <Route
+                path="/platform"
+                element={<Navigate to="/platform/tenants" replace />}
+              />
+              <Route path="/platform/tenants" element={<TenantsScreen />} />
+              <Route
+                path="/platform/tenants/:id"
+                element={<TenantDetailScreen />}
+              />
             </Route>
 
             <Route

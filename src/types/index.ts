@@ -66,6 +66,34 @@ export interface CashierList {
   cashierCap: number;
 }
 
+export interface TenantSummary {
+  id: string;
+  name: string;
+  createdAt: string;
+  userCount: number;
+  activeCashierCount: number;
+  cashierCap: number;
+  isActive: boolean;
+}
+
+export interface TenantUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+}
+
+export interface TenantDetail {
+  id: string;
+  name: string;
+  createdAt: string;
+  cashierCap: number;
+  activeCashierCount: number;
+  isActive: boolean;
+  users: TenantUser[];
+}
+
 export interface Paged<T> {
   items: T[];
   page: number;

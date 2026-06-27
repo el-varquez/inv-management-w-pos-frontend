@@ -39,11 +39,26 @@ export const useTenantMutations = () => {
   const setCashierCap = (id: string, cashierCap: number) =>
     run(() => platformService.setCashierCap(id, cashierCap));
 
+  const editUser = (
+    tenantId: string,
+    userId: string,
+    payload: { name: string; email: string; password?: string },
+  ) => run(() => platformService.editUser(tenantId, userId, payload));
+
+  const deactivateUser = (tenantId: string, userId: string) =>
+    run(() => platformService.deactivateUser(tenantId, userId));
+
+  const reactivateUser = (tenantId: string, userId: string) =>
+    run(() => platformService.reactivateUser(tenantId, userId));
+
   return {
     createTenant,
     suspendTenant,
     reactivateTenant,
     setCashierCap,
+    editUser,
+    deactivateUser,
+    reactivateUser,
     loading,
     error,
   };

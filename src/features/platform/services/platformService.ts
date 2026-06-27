@@ -34,4 +34,20 @@ export const platformService = {
   setCashierCap: async (id: string, cashierCap: number): Promise<void> => {
     await api.patch(`/platform/tenants/${id}/cashier-cap`, { cashierCap });
   },
+
+  editUser: async (
+    tenantId: string,
+    userId: string,
+    payload: { name: string; email: string; password?: string },
+  ): Promise<void> => {
+    await api.put(`/platform/tenants/${tenantId}/users/${userId}`, payload);
+  },
+
+  deactivateUser: async (tenantId: string, userId: string): Promise<void> => {
+    await api.post(`/platform/tenants/${tenantId}/users/${userId}/deactivate`);
+  },
+
+  reactivateUser: async (tenantId: string, userId: string): Promise<void> => {
+    await api.post(`/platform/tenants/${tenantId}/users/${userId}/reactivate`);
+  },
 };

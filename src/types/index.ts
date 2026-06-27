@@ -332,3 +332,22 @@ export interface BestSeller {
   profit: number;
   marginPercent: number;
 }
+
+export interface ProfileAccount {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export interface ProfileBusiness {
+  tenantId: string;
+  name: string;
+  cashierCap: number;
+  activeCashiers: number;
+}
+
+export interface Profile {
+  account: ProfileAccount;
+  business: ProfileBusiness;
+}

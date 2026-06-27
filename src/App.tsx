@@ -14,6 +14,8 @@ import { InventoryCountScreen } from './features/inventory/screens/InventoryCoun
 import { InventoryHistoryScreen } from './features/inventory/screens/InventoryHistoryScreen';
 import { InventoryValuationScreen } from './features/inventory/screens/InventoryValuationScreen';
 import { CashiersScreen } from './features/cashiers/screens/CashiersScreen';
+import { ProfileScreen } from './features/profile/screens/ProfileScreen';
+import { BillingScreen } from './features/profile/screens/BillingScreen';
 import { POSScreen } from './features/sales/screens/POSScreen';
 import { SalesHistoryScreen } from './features/sales/screens/SalesHistoryScreen';
 import { SalesReportScreen } from './features/reports/screens/SalesReportScreen';
@@ -89,6 +91,8 @@ export default function App() {
               element={<BestSellersScreen />}
             />
             <Route path="/cashiers" element={<CashiersScreen />} />
+            <Route path="/profile" element={<ProfileScreen />} />
+            <Route path="/profile/billing" element={<BillingScreen />} />
             </Route>
           </Route>
         </Route>

@@ -16,11 +16,16 @@ export const EditUserModal = ({ tenantId, user, onClose, onDone }: Props) => {
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const changingPassword = password.length > 0;
+  const passwordsMatch = password === confirmPassword;
+  const showMismatch = changingPassword && confirmPassword.length > 0 && !passwordsMatch;
 
   const canSubmit =
     name.trim().length > 0 &&
     email.trim().length > 0 &&
-    (password.length === 0 || password.length >= 8);
+    (!changingPassword || (password.length >= 8 && passwordsMatch));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +93,24 @@ export const EditUserModal = ({ tenantId, user, onClose, onDone }: Props) => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+
+        {changingPassword && (
+          <div className="field">
+            <label htmlFor="user-password-confirm">Confirm new password</label>
+            <input
+              id="user-password-confirm"
+              className="input"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Re-enter the new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            {showMismatch && (
+              <p className="field-hint text-red">Passwords don’t match.</p>
+            )}
+          </div>
+        )}
 
         <div className="modal-actions">
           <button

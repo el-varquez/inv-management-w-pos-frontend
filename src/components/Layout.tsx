@@ -79,6 +79,16 @@ export const Layout = () => {
                   Cashiers
                 </NavLink>
               )}
+              {isAdmin && (
+                <NavLink
+                  to="/profile"
+                  className={({ isActive }) =>
+                    isActive ? 'nav-link is-active' : 'nav-link'
+                  }
+                >
+                  Profile
+                </NavLink>
+              )}
             </>
           )}
         </nav>

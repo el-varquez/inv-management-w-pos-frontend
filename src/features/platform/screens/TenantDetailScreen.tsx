@@ -3,18 +3,28 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTenant } from '../hooks/useTenant';
 import { TenantStatusModal } from '../components/TenantStatusModal';
 import { CashierCapModal } from '../components/CashierCapModal';
+import { EditUserModal } from '../components/EditUserModal';
+import { UserStatusModal } from '../components/UserStatusModal';
 import { formatDate } from '../../../lib/format';
+import type { TenantUser } from '../../../types';
 
 type ModalState = 'suspend' | 'reactivate' | 'cap' | null;
+type UserAction = { user: TenantUser; action: 'edit' | 'deactivate' | 'reactivate' };
 
 export const TenantDetailScreen = () => {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const { tenant, loading, error, refetch } = useTenant(id);
   const [modal, setModal] = useState<ModalState>(null);
+  const [userAction, setUserAction] = useState<UserAction | null>(null);
 
   const closeAndRefresh = () => {
     setModal(null);
+    refetch();
+  };
+
+  const closeUserAndRefresh = () => {
+    setUserAction(null);
     refetch();
   };
 
@@ -116,6 +126,7 @@ export const TenantDetailScreen = () => {
                   <th>Email</th>
                   <th>Role</th>
                   <th>Status</th>
+                  <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,6 +143,42 @@ export const TenantDetailScreen = () => {
                       >
                         {u.isActive ? 'Active' : 'Inactive'}
                       </span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div
+                        style={{
+                          display: 'inline-flex',
+                          gap: 8,
+                          justifyContent: 'flex-end',
+                        }}
+                      >
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => setUserAction({ user: u, action: 'edit' })}
+                        >
+                          Edit
+                        </button>
+                        {u.role === 'Cashier' &&
+                          (u.isActive ? (
+                            <button
+                              className="btn btn-quiet btn-sm"
+                              onClick={() =>
+                                setUserAction({ user: u, action: 'deactivate' })
+                              }
+                            >
+                              Deactivate
+                            </button>
+                          ) : (
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              onClick={() =>
+                                setUserAction({ user: u, action: 'reactivate' })
+                              }
+                            >
+                              Reactivate
+                            </button>
+                          ))}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -167,6 +214,33 @@ export const TenantDetailScreen = () => {
           activeCashierCount={tenant.activeCashierCount}
           onClose={() => setModal(null)}
           onDone={closeAndRefresh}
+        />
+      )}
+
+      {tenant && userAction?.action === 'edit' && (
+        <EditUserModal
+          tenantId={tenant.id}
+          user={userAction.user}
+          onClose={() => setUserAction(null)}
+          onDone={closeUserAndRefresh}
+        />
+      )}
+      {tenant && userAction?.action === 'deactivate' && (
+        <UserStatusModal
+          tenantId={tenant.id}
+          user={userAction.user}
+          mode="deactivate"
+          onClose={() => setUserAction(null)}
+          onDone={closeUserAndRefresh}
+        />
+      )}
+      {tenant && userAction?.action === 'reactivate' && (
+        <UserStatusModal
+          tenantId={tenant.id}
+          user={userAction.user}
+          mode="reactivate"
+          onClose={() => setUserAction(null)}
+          onDone={closeUserAndRefresh}
         />
       )}
     </>

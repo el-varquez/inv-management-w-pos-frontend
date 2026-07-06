@@ -6,6 +6,8 @@ import type {
   ItemComponents,
   LowStockItem,
   Paged,
+  InventoryCount,
+  InventoryCountSummary,
 } from '../../../types';
 
 export const inventoryService = {
@@ -61,9 +63,32 @@ export const inventoryService = {
 
   completeCount: async (
     countId: string,
-    lines: { itemId: string; actualQty: number }[]
+    lines: { itemId: string; actualQty: number | null }[]
   ): Promise<void> => {
     await api.post(`/inventory/count/${countId}/complete`, lines);
+  },
+
+  saveProgress: async (
+    countId: string,
+    lines: { itemId: string; actualQty: number | null }[]
+  ): Promise<void> => {
+    await api.post(`/inventory/count/${countId}/progress`, lines);
+  },
+
+  getCount: async (id: string): Promise<InventoryCount> => {
+    const { data } = await api.get<InventoryCount>(`/inventory/count/${id}`);
+    return data;
+  },
+
+  getCounts: async (params: {
+    status?: 'Draft' | 'Completed';
+    page: number;
+    pageSize: number;
+  }): Promise<Paged<InventoryCountSummary>> => {
+    const { data } = await api.get<Paged<InventoryCountSummary>>('/inventory/count', {
+      params,
+    });
+    return data;
   },
 
   getComponents: async (itemId: string): Promise<ItemComponents> => {

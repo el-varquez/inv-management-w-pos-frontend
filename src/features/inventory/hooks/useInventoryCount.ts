@@ -1,50 +1,69 @@
 import { useState } from 'react';
 import { inventoryService } from '../services/inventoryService';
 import { getApiErrorMessage } from '../../../services/apiError';
+import type { InventoryCount } from '../../../types';
+
+type CountLine = { itemId: string; actualQty: number | null };
 
 export const useInventoryCount = () => {
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createCount = async (notes?: string): Promise<string | null> => {
+  const start = async (notes?: string): Promise<string | null> => {
+    setSaving(true);
+    setError(null);
+    try {
+      const { id } = await inventoryService.createCount(notes);
+      return id;
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Failed to start count.'));
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const load = async (id: string): Promise<InventoryCount | null> => {
     setLoading(true);
     setError(null);
     try {
-      const result = await inventoryService.createCount(notes);
-      return result.id;
+      return await inventoryService.getCount(id);
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Failed to create count.'));
+      setError(getApiErrorMessage(err, 'Failed to load count.'));
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-  const completeCount = async (
-    countId: string,
-    lines: { itemId: string; actualQty: number }[]
-  ): Promise<boolean> => {
-    setLoading(true);
+  const saveProgress = async (id: string, lines: CountLine[]): Promise<boolean> => {
+    setSaving(true);
     setError(null);
     try {
-      await inventoryService.completeCount(countId, lines);
+      await inventoryService.saveProgress(id, lines);
+      return true;
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Failed to save progress.'));
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const complete = async (id: string, lines: CountLine[]): Promise<boolean> => {
+    setSaving(true);
+    setError(null);
+    try {
+      await inventoryService.completeCount(id, lines);
       return true;
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to complete count.'));
       return false;
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const submitCount = async (
-    lines: { itemId: string; actualQty: number }[],
-    notes?: string
-  ): Promise<boolean> => {
-    const id = await createCount(notes);
-    if (!id) return false;
-    return completeCount(id, lines);
-  };
-
-  return { createCount, completeCount, submitCount, loading, error };
+  return { start, load, saveProgress, complete, loading, saving, error };
 };

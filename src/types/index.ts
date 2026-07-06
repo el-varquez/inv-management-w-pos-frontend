@@ -159,8 +159,7 @@ export interface InventoryCountLine {
   itemName: string;
   categoryName: string;
   expectedQty: number;
-  actualQty: number;
-  variance: number;
+  actualQty: number | null;
 }
 
 export interface InventoryCount {
@@ -168,9 +167,18 @@ export interface InventoryCount {
   reference: string;
   notes?: string;
   status: 'Draft' | 'Completed';
-  completedAt?: string;
   createdAt: string;
+  completedAt?: string;
   lines: InventoryCountLine[];
+}
+
+export interface InventoryCountSummary {
+  id: string;
+  reference: string;
+  status: 'Draft' | 'Completed';
+  createdAt: string;
+  completedAt?: string;
+  lineCount: number;
 }
 
 export type AdjustmentReason =

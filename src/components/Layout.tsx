@@ -4,6 +4,15 @@ import { useAuth } from '../features/auth/hooks/useAuth';
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   isActive ? 'nav-link is-active' : 'nav-link';
 
+const DashboardIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+  </svg>
+);
+
 const ItemsIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0l-7-7V3.4h10.2l6.8 6.8a2 2 0 0 1 0 3.2Z" />
@@ -68,6 +77,11 @@ export const Layout = () => {
         </div>
 
         <nav className="nav">
+          <NavLink to="/" end className={navLinkClass}>
+            <DashboardIcon />
+            <span className="nav-label">Dashboard</span>
+            <span className="nav-tiny">Home</span>
+          </NavLink>
           <NavLink to="/items" className={navLinkClass}>
             <ItemsIcon />
             <span className="nav-label">Items</span>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useItems } from '../hooks/useItems';
 import { useCategories } from '../hooks/useCategories';
-import { useAuth } from '../../auth/hooks/useAuth';
+import { useIsAdmin } from '../../../store/authStore';
 import { ItemsTabs } from '../components/ItemsTabs';
 import { ItemFormModal } from '../components/ItemFormModal';
 import { DeleteItemModal } from '../components/DeleteItemModal';
@@ -38,10 +38,8 @@ export const ItemsScreen = () => {
     totalPages,
   } = useItems(filters);
   const { categories, createCategory } = useCategories();
-  const { user } = useAuth();
+  const isAdmin = useIsAdmin();
   const [modal, setModal] = useState<ModalState>(null);
-
-  const isAdmin = user?.role === 'Admin';
 
   const closeAndRefresh = () => {
     setModal(null);

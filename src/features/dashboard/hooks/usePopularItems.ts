@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { reportsService } from '../../reports/services/reportsService';
+import { dashboardService } from '../services/dashboardService';
 import { getApiErrorMessage } from '../../../services/apiError';
 import type { BestSeller } from '../../../types';
 
@@ -22,7 +22,7 @@ export const usePopularItems = (window: PopularWindow) => {
     try {
       const from = new Date();
       from.setDate(from.getDate() - WINDOW_DAYS[window]);
-      const data = await reportsService.getBestSellers({ from: from.toISOString() });
+      const data = await dashboardService.getBestSellers({ from: from.toISOString() });
       setItems(data.slice(0, 8));
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to load popular items.'));

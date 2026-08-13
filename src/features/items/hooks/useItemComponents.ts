@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { inventoryService } from '../services/inventoryService';
+import { itemService } from '../services/itemService';
 import { getApiErrorMessage } from '../../../services/apiError';
 import type { ItemComponents } from '../../../types';
 
@@ -13,7 +13,7 @@ export const useItemComponents = () => {
     setLoading(true);
     setError(null);
     try {
-      setComponents(await inventoryService.getComponents(itemId));
+      setComponents(await itemService.getComponents(itemId));
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to load components.'));
     } finally {
@@ -28,7 +28,7 @@ export const useItemComponents = () => {
     setSaving(true);
     setError(null);
     try {
-      await inventoryService.setComponents(itemId, rows);
+      await itemService.setComponents(itemId, rows);
       return true;
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to save components.'));

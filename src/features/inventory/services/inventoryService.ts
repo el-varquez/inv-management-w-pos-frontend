@@ -3,7 +3,6 @@ import type {
   StockLevel,
   InventoryHistoryItem,
   InventoryValuation,
-  ItemComponents,
   LowStockItem,
   Paged,
   InventoryCount,
@@ -92,20 +91,6 @@ export const inventoryService = {
       params,
     });
     return data;
-  },
-
-  getComponents: async (itemId: string): Promise<ItemComponents> => {
-    const { data } = await api.get<ItemComponents>(
-      `/inventory/items/${itemId}/components`
-    );
-    return data;
-  },
-
-  setComponents: async (
-    itemId: string,
-    components: { componentItemId: string; quantity: number }[]
-  ): Promise<void> => {
-    await api.post(`/inventory/items/${itemId}/components`, components);
   },
 
   getHistory: async (params: {

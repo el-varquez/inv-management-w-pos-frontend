@@ -1,18 +1,12 @@
 import { useState } from 'react';
 import { useStockLevels } from '../hooks/useStockLevels';
 import { InventoryTabs } from '../components/InventoryTabs';
-import { AddStockModal } from '../components/AddStockModal';
 import { AdjustStockModal } from '../components/AdjustStockModal';
 import { Pagination } from '../../../components/Pagination';
 import { peso } from '../../../lib/format';
 import type { StockLevel } from '../../../types';
 
 const SKELETON_ROWS = Array.from({ length: 5 });
-
-type ModalState =
-  | { kind: 'add'; item: StockLevel }
-  | { kind: 'adjust'; item: StockLevel }
-  | null;
 
 export const StockLevelsScreen = () => {
   const {
@@ -26,10 +20,10 @@ export const StockLevelsScreen = () => {
     totalCount,
     totalPages,
   } = useStockLevels();
-  const [modal, setModal] = useState<ModalState>(null);
+  const [adjustItem, setAdjustItem] = useState<StockLevel | null>(null);
 
   const closeAndRefresh = () => {
-    setModal(null);
+    setAdjustItem(null);
     refetch();
   };
 
@@ -122,14 +116,8 @@ export const StockLevelsScreen = () => {
                 <td className="num">
                   <div className="row-actions">
                     <button
-                      className="btn btn-ghost btn-sm"
-                      onClick={() => setModal({ kind: 'add', item: s })}
-                    >
-                      Add stock
-                    </button>
-                    <button
                       className="btn btn-quiet btn-sm"
-                      onClick={() => setModal({ kind: 'adjust', item: s })}
+                      onClick={() => setAdjustItem(s)}
                     >
                       Adjust
                     </button>
@@ -151,17 +139,10 @@ export const StockLevelsScreen = () => {
         />
       )}
 
-      {modal?.kind === 'add' && (
-        <AddStockModal
-          item={modal.item}
-          onClose={() => setModal(null)}
-          onDone={closeAndRefresh}
-        />
-      )}
-      {modal?.kind === 'adjust' && (
+      {adjustItem && (
         <AdjustStockModal
-          item={modal.item}
-          onClose={() => setModal(null)}
+          item={adjustItem}
+          onClose={() => setAdjustItem(null)}
           onDone={closeAndRefresh}
         />
       )}

@@ -3,6 +3,7 @@ export interface Item {
   name: string;
   description?: string;
   sku?: string;
+  barcode?: string;
   costPrice: number;
   sellingPrice: number;
   stock: number;
@@ -29,6 +30,19 @@ export interface ItemComponents {
   isComposite: boolean;
   totalComponentCost: number;
   components: ItemComponent[];
+}
+
+export interface SearchItem {
+  id: string;
+  name: string;
+  barcode?: string;
+  sku?: string;
+  stock: number;
+  costPrice: number;
+  sellingPrice: number;
+  isActive: boolean;
+  isComposite: boolean;
+  categoryName: string;
 }
 
 export interface Category {

@@ -1,4 +1,4 @@
-name: CI
+name: Design System CI
 
 on:
   pull_request:
@@ -6,11 +6,11 @@ on:
     branches: [main]
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: design-system-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  ci:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

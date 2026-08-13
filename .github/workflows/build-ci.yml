@@ -1,4 +1,4 @@
-name: Design System CI
+name: Build CI
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 concurrency:
-  group: design-system-ci-${{ github.ref }}
+  group: build-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -20,6 +20,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
-      - name: Design-system checks
-        run: npm run check:design
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build (typecheck + bundle)
+        run: npm run build

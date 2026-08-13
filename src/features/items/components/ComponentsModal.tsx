@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Modal } from '../../../components/Modal';
 import { SearchSelect } from '../../../components/SearchSelect';
-import { useItemComponents } from '../../inventory/hooks/useItemComponents';
+import { useItemComponents } from '../hooks/useItemComponents';
 import { useSellableItems } from '../hooks/useSellableItems';
 import { peso } from '../../../lib/format';
 import type { Item } from '../../../types';

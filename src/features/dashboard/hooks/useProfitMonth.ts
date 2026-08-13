@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { reportsService } from '../../reports/services/reportsService';
+import { dashboardService } from '../services/dashboardService';
 import { getApiErrorMessage } from '../../../services/apiError';
 import type { ProfitReport } from '../../../types';
 
@@ -14,7 +14,7 @@ export const useProfitMonth = () => {
     try {
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const data = await reportsService.getProfitReport({
+      const data = await dashboardService.getProfitReport({
         from: monthStart.toISOString(),
       });
       setReport(data);

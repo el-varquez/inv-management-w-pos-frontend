@@ -19,3 +19,7 @@ export const useAuthStore = create<AuthState>()(
     { name: 'auth-storage' }
   )
 );
+
+// Role strings are a cross-repo seam ([Authorize(Roles = ...)] on the API) — this
+// selector is the one place the frontend compares against 'Admin'.
+export const useIsAdmin = () => useAuthStore((s) => s.user?.role === 'Admin');

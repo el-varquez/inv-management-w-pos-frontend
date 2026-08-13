@@ -1,5 +1,5 @@
 import api from '../../../services/api';
-import type { Item, Paged, SearchItem } from '../../../types';
+import type { Item, ItemComponents, Paged, SearchItem } from '../../../types';
 
 export type CreateItemPayload = Omit<
   Item,
@@ -47,5 +47,19 @@ export const itemService = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/items/${id}`);
+  },
+
+  getComponents: async (itemId: string): Promise<ItemComponents> => {
+    const { data } = await api.get<ItemComponents>(
+      `/inventory/items/${itemId}/components`
+    );
+    return data;
+  },
+
+  setComponents: async (
+    itemId: string,
+    components: { componentItemId: string; quantity: number }[]
+  ): Promise<void> => {
+    await api.post(`/inventory/items/${itemId}/components`, components);
   },
 };

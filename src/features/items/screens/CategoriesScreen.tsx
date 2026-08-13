@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useCategories } from '../hooks/useCategories';
-import { useAuth } from '../../auth/hooks/useAuth';
+import { useIsAdmin } from '../../../store/authStore';
 import { ItemsTabs } from '../components/ItemsTabs';
 import { CategoryFormModal } from '../components/CategoryFormModal';
 import { DeleteCategoryModal } from '../components/DeleteCategoryModal';
@@ -16,10 +16,8 @@ type ModalState =
 
 export const CategoriesScreen = () => {
   const { categories, loading, error, refetch } = useCategories();
-  const { user } = useAuth();
+  const isAdmin = useIsAdmin();
   const [modal, setModal] = useState<ModalState>(null);
-
-  const isAdmin = user?.role === 'Admin';
 
   const closeAndRefresh = () => {
     setModal(null);

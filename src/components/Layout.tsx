@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/hooks/useAuth';
+import { useIsAdmin } from '../store/authStore';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   isActive ? 'nav-link is-active' : 'nav-link';
@@ -58,7 +59,7 @@ export const Layout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const isAdmin = user?.role === 'Admin';
+  const isAdmin = useIsAdmin();
 
   const handleLogout = () => {
     logout();

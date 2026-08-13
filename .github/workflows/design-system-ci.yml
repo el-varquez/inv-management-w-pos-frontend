@@ -1,0 +1,35 @@
+name: Design System CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: design-system-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Design-system checks
+        run: npm run check:design
+
+      - name: Build (typecheck + bundle)
+        run: npm run build

@@ -26,6 +26,7 @@ export const ItemFormModal = ({
 
   const [name, setName] = useState(item?.name ?? '');
   const [sku, setSku] = useState(item?.sku ?? '');
+  const [barcode, setBarcode] = useState(item?.barcode ?? '');
   const [description, setDescription] = useState(item?.description ?? '');
   const [costPrice, setCostPrice] = useState(
     item ? String(item.costPrice) : ''
@@ -76,6 +77,7 @@ export const ItemFormModal = ({
       name: name.trim(),
       description: description.trim() || undefined,
       sku: sku.trim() || undefined,
+      barcode: barcode.trim() || undefined,
       costPrice: cost,
       sellingPrice: price,
       lowStockThreshold: parseInt(lowStockThreshold, 10) || 0,
@@ -118,12 +120,24 @@ export const ItemFormModal = ({
         </div>
 
         <div className="field">
-          <label htmlFor="sku">SKU / barcode (optional)</label>
+          <label htmlFor="barcode">Barcode (optional)</label>
+          <input
+            id="barcode"
+            className="input"
+            type="text"
+            placeholder="Scan or type, e.g. 4800016641234"
+            value={barcode}
+            onChange={(e) => setBarcode(e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="sku">SKU (optional)</label>
           <input
             id="sku"
             className="input"
             type="text"
-            placeholder="e.g. 4800016641234"
+            placeholder="e.g. KOPIKO-TWIN-10"
             value={sku}
             onChange={(e) => setSku(e.target.value)}
           />

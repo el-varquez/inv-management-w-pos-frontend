@@ -1433,3 +1433,18 @@ select.input {
   margin-top: 3px;
   max-width: 52ch;
 }
+
+/* Receive stock screen */
+.receive-scan { position: relative; overflow: visible; }
+.receive-success { padding: 12px 16px; }
+.receive-result-name { display: flex; align-items: center; gap: 8px; }
+.receive-result-sub { display: block; font-size: 12px; opacity: 0.7; }
+.qty-stepper { display: inline-flex; align-items: center; gap: 4px; }
+.input-qty { width: 64px; text-align: right; }
+.input-money { width: 96px; text-align: right; }
+.search-select-option.is-disabled { opacity: 0.5; cursor: not-allowed; }
+.row-flash { animation: receive-flash 0.6s ease-out; }
+@keyframes receive-flash {
+  from { background: rgba(194, 85, 47, 0.18); }
+  to { background: transparent; }
+}

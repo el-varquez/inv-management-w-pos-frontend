@@ -1,5 +1,5 @@
 import api from '../../../services/api';
-import type { Item, Paged } from '../../../types';
+import type { Item, Paged, SearchItem } from '../../../types';
 
 export type CreateItemPayload = Omit<
   Item,
@@ -26,6 +26,13 @@ export const itemService = {
 
   getSellable: async (): Promise<Item[]> => {
     const { data } = await api.get<Item[]>('/items/sellable');
+    return data;
+  },
+
+  search: async (term: string, limit = 10): Promise<SearchItem[]> => {
+    const { data } = await api.get<SearchItem[]>('/items/search', {
+      params: { term, limit },
+    });
     return data;
   },
 

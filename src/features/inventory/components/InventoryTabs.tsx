@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 
 const tabs = [
   { to: '/inventory/stock-levels', label: 'Stock levels' },
+  { to: '/inventory/receive', label: 'Receive' },
   { to: '/inventory/low-stock', label: 'Low stock' },
   { to: '/inventory/count', label: 'Stocktake' },
   { to: '/inventory/history', label: 'History' },

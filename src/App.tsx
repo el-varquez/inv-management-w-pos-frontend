@@ -5,6 +5,7 @@ import { LoginScreen } from './features/auth/screens/LoginScreen';
 import { ItemsScreen } from './features/items/screens/ItemsScreen';
 import { CategoriesScreen } from './features/items/screens/CategoriesScreen';
 import { StockLevelsScreen } from './features/inventory/screens/StockLevelsScreen';
+import { ReceiveStockScreen } from './features/inventory/screens/ReceiveStockScreen';
 import { LowStockScreen } from './features/inventory/screens/LowStockScreen';
 import { InventoryCountScreen } from './features/inventory/screens/InventoryCountScreen';
 import { InventoryHistoryScreen } from './features/inventory/screens/InventoryHistoryScreen';
@@ -33,6 +34,7 @@ export default function App() {
               path="/inventory/stock-levels"
               element={<StockLevelsScreen />}
             />
+            <Route path="/inventory/receive" element={<ReceiveStockScreen />} />
             <Route path="/inventory/low-stock" element={<LowStockScreen />} />
             <Route path="/inventory/count" element={<InventoryCountScreen />} />
             <Route

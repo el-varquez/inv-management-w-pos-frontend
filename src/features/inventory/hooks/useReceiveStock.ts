@@ -2,31 +2,34 @@ import { useState } from 'react';
 import { inventoryService } from '../services/inventoryService';
 import { getApiErrorMessage } from '../../../services/apiError';
 
-interface AddStockPayload {
+export interface ReceiveLinePayload {
   itemId: string;
   quantity: number;
   costPerUnit: number;
-  supplierName?: string;
-  notes?: string;
+  sellingPrice: number;
 }
 
-export const useAddStock = () => {
+export const useReceiveStock = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const addStock = async (payload: AddStockPayload): Promise<boolean> => {
+  const receiveStock = async (payload: {
+    supplierName?: string;
+    notes?: string;
+    lines: ReceiveLinePayload[];
+  }): Promise<boolean> => {
     setLoading(true);
     setError(null);
     try {
-      await inventoryService.addStock(payload);
+      await inventoryService.receiveStock(payload);
       return true;
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Failed to add stock.'));
+      setError(getApiErrorMessage(err, 'Failed to receive stock.'));
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  return { addStock, loading, error };
+  return { receiveStock, loading, error, clearError: () => setError(null) };
 };

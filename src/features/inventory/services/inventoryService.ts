@@ -27,15 +27,18 @@ export const inventoryService = {
     return data;
   },
 
-  addStock: async (payload: {
-    itemId: string;
-    quantity: number;
-    costPerUnit: number;
+  receiveStock: async (payload: {
     supplierName?: string;
     notes?: string;
-  }): Promise<{ id: string }> => {
-    const { data } = await api.post<{ id: string }>(
-      '/inventory/add-stock',
+    lines: {
+      itemId: string;
+      quantity: number;
+      costPerUnit: number;
+      sellingPrice: number;
+    }[];
+  }): Promise<{ count: number }> => {
+    const { data } = await api.post<{ count: number }>(
+      '/inventory/receive-stock',
       payload
     );
     return data;

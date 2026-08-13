@@ -3,6 +3,12 @@ export const peso = new Intl.NumberFormat('en-PH', {
   currency: 'PHP',
 });
 
+export const pesoWhole = new Intl.NumberFormat('en-PH', {
+  style: 'currency',
+  currency: 'PHP',
+  maximumFractionDigits: 0,
+});
+
 const dateTimeFmt = new Intl.DateTimeFormat('en-PH', {
   year: 'numeric',
   month: 'short',

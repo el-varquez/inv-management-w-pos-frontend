@@ -243,3 +243,69 @@ export interface BestSeller {
   profit: number;
   marginPercent: number;
 }
+
+export interface DashboardTodayKpi {
+  paidSales: number;
+  transactionCount: number;
+  averageSale: number;
+  yesterdayPaidSales: number;
+  deltaPercent: number | null;
+}
+
+export interface StockHealth {
+  totalItems: number;
+  inStock: number;
+  lowStock: number;
+  outOfStock: number;
+}
+
+export interface TopUtangRow {
+  sukiId: string;
+  name: string;
+  balance: number;
+  chargeCount: number;
+  oldestDays: number;
+}
+
+export interface UtangSnapshot {
+  totalOutstanding: number;
+  sukiCount: number;
+  collectedThisWeek: number;
+  top: TopUtangRow[];
+}
+
+export interface PaymentSplitRow {
+  method: string;
+  amount: number;
+  transactionCount: number;
+}
+
+export interface RunningOutRow {
+  itemId: string;
+  name: string;
+  stock: number;
+  lowStockThreshold: number;
+}
+
+export interface DashboardSummary {
+  today: DashboardTodayKpi;
+  stockHealth: StockHealth;
+  utang: UtangSnapshot;
+  paymentsToday: PaymentSplitRow[];
+  runningOut: RunningOutRow[];
+}
+
+export type TrendPeriod = 'day' | 'week' | 'month' | 'year';
+
+export interface SalesTrendBucket {
+  bucketStart: string;
+  paidSales: number;
+  utangCharged: number;
+}
+
+export interface SalesTrend {
+  period: TrendPeriod;
+  buckets: SalesTrendBucket[];
+  totalPaidSales: number;
+  totalUtangCharged: number;
+}

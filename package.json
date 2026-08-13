@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "check:tokens": "node scripts/check-design-tokens.mjs",
     "check:colors": "node scripts/check-raw-colors.mjs",
-    "check:design": "npm run check:tokens && npm run check:colors"
+    "check:design": "npm run check:tokens && npm run check:colors",
+    "check:architecture": "node scripts/check-architecture.mjs",
+    "check:conventions": "node scripts/check-conventions.mjs"
   },
   "dependencies": {
     "axios": "^1.17.0",

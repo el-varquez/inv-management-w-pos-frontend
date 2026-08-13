@@ -1,4 +1,4 @@
-name: Design System CI
+name: Architecture CI
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 concurrency:
-  group: design-system-ci-${{ github.ref }}
+  group: architecture-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -21,5 +21,5 @@ jobs:
         with:
           node-version: 22
 
-      - name: Design-system checks
-        run: npm run check:design
+      - name: Architecture checks
+        run: npm run check:architecture

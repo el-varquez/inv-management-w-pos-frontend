@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 export const LoginScreen = () => {
@@ -30,7 +30,7 @@ export const LoginScreen = () => {
 
         <h1 className="login-title">Welcome back</h1>
         <p className="login-lead">
-          Sign in to manage your items, stock, and sales.
+          Sign in to manage your items, stock, and reports.
         </p>
 
         {error && (
@@ -76,10 +76,6 @@ export const LoginScreen = () => {
           {loading ? <span className="spinner" aria-hidden="true" /> : null}
           {loading ? 'Signing in…' : 'Sign in'}
         </button>
-
-        <p className="login-lead" style={{ textAlign: 'center', marginTop: '1rem' }}>
-          New here? <Link to="/register">Create an account</Link>
-        </p>
       </form>
     </div>
   );

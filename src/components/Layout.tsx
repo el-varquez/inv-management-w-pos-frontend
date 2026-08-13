@@ -12,8 +12,6 @@ export const Layout = () => {
     navigate('/login', { replace: true });
   };
 
-  const isSuperAdmin = user?.role === 'SuperAdmin';
-
   return (
     <div className="shell">
       <header className="topbar">
@@ -26,70 +24,39 @@ export const Layout = () => {
         </div>
 
         <nav className="nav">
-          {isSuperAdmin ? (
+          <NavLink
+            to="/items"
+            className={({ isActive }) =>
+              isActive ? 'nav-link is-active' : 'nav-link'
+            }
+          >
+            Items
+          </NavLink>
+          <NavLink
+            to="/inventory"
+            className={({ isActive }) =>
+              isActive ? 'nav-link is-active' : 'nav-link'
+            }
+          >
+            Inventory
+          </NavLink>
+          <NavLink
+            to="/reports"
+            className={({ isActive }) =>
+              isActive ? 'nav-link is-active' : 'nav-link'
+            }
+          >
+            Reports
+          </NavLink>
+          {isAdmin && (
             <NavLink
-              to="/platform"
+              to="/cashiers"
               className={({ isActive }) =>
                 isActive ? 'nav-link is-active' : 'nav-link'
               }
             >
-              Platform
+              Cashiers
             </NavLink>
-          ) : (
-            <>
-              <NavLink
-                to="/items"
-                className={({ isActive }) =>
-                  isActive ? 'nav-link is-active' : 'nav-link'
-                }
-              >
-                Items
-              </NavLink>
-              <NavLink
-                to="/inventory"
-                className={({ isActive }) =>
-                  isActive ? 'nav-link is-active' : 'nav-link'
-                }
-              >
-                Inventory
-              </NavLink>
-              <NavLink
-                to="/sales"
-                className={({ isActive }) =>
-                  isActive ? 'nav-link is-active' : 'nav-link'
-                }
-              >
-                Sales
-              </NavLink>
-              <NavLink
-                to="/reports"
-                className={({ isActive }) =>
-                  isActive ? 'nav-link is-active' : 'nav-link'
-                }
-              >
-                Reports
-              </NavLink>
-              {isAdmin && (
-                <NavLink
-                  to="/cashiers"
-                  className={({ isActive }) =>
-                    isActive ? 'nav-link is-active' : 'nav-link'
-                  }
-                >
-                  Cashiers
-                </NavLink>
-              )}
-              {isAdmin && (
-                <NavLink
-                  to="/profile"
-                  className={({ isActive }) =>
-                    isActive ? 'nav-link is-active' : 'nav-link'
-                  }
-                >
-                  Profile
-                </NavLink>
-              )}
-            </>
           )}
         </nav>
 

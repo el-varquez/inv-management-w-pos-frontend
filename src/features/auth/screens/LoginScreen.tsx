@@ -23,8 +23,11 @@ export const LoginScreen = () => {
         <div className="login-brand">
           <div className="brand-mark">T</div>
           <div>
-            <div className="brand-name">Tindahan</div>
-            <div className="brand-sub">POS &amp; Inventory</div>
+            <div className="brand-name">
+              Toyang's
+              <br />
+              Inventory
+            </div>
           </div>
         </div>
 

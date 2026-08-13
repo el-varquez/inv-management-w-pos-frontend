@@ -45,13 +45,6 @@ export interface LoginResult {
   role: string;
 }
 
-export interface RegisterPayload {
-  businessName: string;
-  adminName: string;
-  email: string;
-  password: string;
-}
-
 export interface Cashier {
   id: string;
   name: string;
@@ -63,35 +56,6 @@ export interface Cashier {
 export interface CashierList {
   cashiers: Cashier[];
   activeCount: number;
-  cashierCap: number;
-}
-
-export interface TenantSummary {
-  id: string;
-  name: string;
-  createdAt: string;
-  userCount: number;
-  activeCashierCount: number;
-  cashierCap: number;
-  isActive: boolean;
-}
-
-export interface TenantUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-}
-
-export interface TenantDetail {
-  id: string;
-  name: string;
-  createdAt: string;
-  cashierCap: number;
-  activeCashierCount: number;
-  isActive: boolean;
-  users: TenantUser[];
 }
 
 export interface Paged<T> {
@@ -195,81 +159,6 @@ export type StockMovementType =
   | 'InventoryCount'
   | 'Return';
 
-export type PaymentType = 'Cash' | 'GCash' | 'Maya';
-
-export interface CartItem {
-  itemId: string;
-  name: string;
-  unitPrice: number;
-  quantity: number;
-  discount: number;
-  stock: number;
-}
-
-export interface CreateTransactionPayload {
-  items: { itemId: string; quantity: number; discount: number }[];
-  transactionDiscount: number;
-  paymentType: PaymentType;
-  amountTendered: number;
-}
-
-export interface TransactionResult {
-  transactionId: string;
-  receiptNumber: string;
-  subtotal: number;
-  discountAmount: number;
-  total: number;
-  amountTendered: number;
-  change: number;
-}
-
-export interface Transaction {
-  id: string;
-  receiptNumber: string;
-  subtotal: number;
-  discountAmount: number;
-  total: number;
-  paymentType: string;
-  amountTendered: number;
-  change: number;
-  isRefunded: boolean;
-  refundedFromId?: string | null;
-  itemCount: number;
-  createdAt: string;
-}
-
-export interface TransactionLine {
-  itemName: string;
-  unitPrice: number;
-  quantity: number;
-  discount: number;
-  total: number;
-}
-
-export interface TransactionDetail {
-  id: string;
-  receiptNumber: string;
-  subtotal: number;
-  discountAmount: number;
-  total: number;
-  paymentType: string;
-  amountTendered: number;
-  change: number;
-  isRefunded: boolean;
-  lines: TransactionLine[];
-  createdAt: string;
-}
-
-export interface SalesSummary {
-  grossSales: number;
-  totalDiscounts: number;
-  refunds: number;
-  netSales: number;
-  transactionCount: number;
-  from?: string | null;
-  to?: string | null;
-}
-
 export interface SalesReportDaily {
   date: string;
   grossSales: number;
@@ -339,23 +228,4 @@ export interface BestSeller {
   revenue: number;
   profit: number;
   marginPercent: number;
-}
-
-export interface ProfileAccount {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
-export interface ProfileBusiness {
-  tenantId: string;
-  name: string;
-  cashierCap: number;
-  activeCashiers: number;
-}
-
-export interface Profile {
-  account: ProfileAccount;
-  business: ProfileBusiness;
 }

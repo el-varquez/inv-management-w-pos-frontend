@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { authService } from '../services/authService';
 import { useAuthStore } from '../../../store/authStore';
 import { getApiErrorMessage } from '../../../services/apiError';
-import type { RegisterPayload } from '../../../types';
 
 export const useAuth = () => {
   const { setAuth, logout, user, token } = useAuthStore();
@@ -15,7 +14,7 @@ export const useAuth = () => {
     try {
       const result = await authService.login(email, password);
       if (result.role === 'Cashier') {
-        setError('Cashiers sign in on the mobile app.');
+        setError('Cashiers sign in on the register.');
         return;
       }
       setAuth(result.token, {
@@ -30,22 +29,5 @@ export const useAuth = () => {
     }
   };
 
-  const register = async (payload: RegisterPayload) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await authService.register(payload);
-      setAuth(result.token, {
-        name: result.name,
-        email: result.email,
-        role: result.role,
-      });
-    } catch (err) {
-      setError(getApiErrorMessage(err, 'Registration failed.'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { login, register, logout, user, token, loading, error };
+  return { login, logout, user, token, loading, error };
 };

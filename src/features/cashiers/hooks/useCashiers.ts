@@ -6,7 +6,6 @@ import { getApiErrorMessage } from '../../../services/apiError';
 export const useCashiers = () => {
   const [cashiers, setCashiers] = useState<Cashier[]>([]);
   const [activeCount, setActiveCount] = useState(0);
-  const [cashierCap, setCashierCap] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +16,6 @@ export const useCashiers = () => {
       const data = await cashierService.getAll();
       setCashiers(data.cashiers);
       setActiveCount(data.activeCount);
-      setCashierCap(data.cashierCap);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to load cashiers.'));
     } finally {
@@ -31,7 +29,6 @@ export const useCashiers = () => {
   return {
     cashiers,
     activeCount,
-    cashierCap,
     loading,
     error,
     refetch: fetchCashiers,

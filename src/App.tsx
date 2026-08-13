@@ -1,11 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { RoleRoute } from './components/RoleRoute';
 import { Layout } from './components/Layout';
 import { LoginScreen } from './features/auth/screens/LoginScreen';
-import { RegisterScreen } from './features/auth/screens/RegisterScreen';
-import { TenantsScreen } from './features/platform/screens/TenantsScreen';
-import { TenantDetailScreen } from './features/platform/screens/TenantDetailScreen';
 import { ItemsScreen } from './features/items/screens/ItemsScreen';
 import { CategoriesScreen } from './features/items/screens/CategoriesScreen';
 import { StockLevelsScreen } from './features/inventory/screens/StockLevelsScreen';
@@ -14,10 +10,6 @@ import { InventoryCountScreen } from './features/inventory/screens/InventoryCoun
 import { InventoryHistoryScreen } from './features/inventory/screens/InventoryHistoryScreen';
 import { InventoryValuationScreen } from './features/inventory/screens/InventoryValuationScreen';
 import { CashiersScreen } from './features/cashiers/screens/CashiersScreen';
-import { ProfileScreen } from './features/profile/screens/ProfileScreen';
-import { BillingScreen } from './features/profile/screens/BillingScreen';
-import { POSScreen } from './features/sales/screens/POSScreen';
-import { SalesHistoryScreen } from './features/sales/screens/SalesHistoryScreen';
 import { SalesReportScreen } from './features/reports/screens/SalesReportScreen';
 import { ExpenseReportScreen } from './features/reports/screens/ExpenseReportScreen';
 import { ProfitReportScreen } from './features/reports/screens/ProfitReportScreen';
@@ -28,30 +20,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginScreen />} />
-        <Route path="/register" element={<RegisterScreen />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
-            <Route
-              element={
-                <RoleRoute allow={(r) => r === 'SuperAdmin'} redirectTo="/items" />
-              }
-            >
-              <Route
-                path="/platform"
-                element={<Navigate to="/platform/tenants" replace />}
-              />
-              <Route path="/platform/tenants" element={<TenantsScreen />} />
-              <Route
-                path="/platform/tenants/:id"
-                element={<TenantDetailScreen />}
-              />
-            </Route>
-
-            <Route
-              element={
-                <RoleRoute allow={(r) => r !== 'SuperAdmin'} redirectTo="/platform" />
-              }
-            >
             <Route path="/" element={<Navigate to="/items" replace />} />
             <Route path="/items" element={<ItemsScreen />} />
             <Route path="/items/categories" element={<CategoriesScreen />} />
@@ -74,12 +44,6 @@ export default function App() {
               element={<InventoryValuationScreen />}
             />
             <Route
-              path="/sales"
-              element={<Navigate to="/sales/pos" replace />}
-            />
-            <Route path="/sales/pos" element={<POSScreen />} />
-            <Route path="/sales/history" element={<SalesHistoryScreen />} />
-            <Route
               path="/reports"
               element={<Navigate to="/reports/sales" replace />}
             />
@@ -91,9 +55,6 @@ export default function App() {
               element={<BestSellersScreen />}
             />
             <Route path="/cashiers" element={<CashiersScreen />} />
-            <Route path="/profile" element={<ProfileScreen />} />
-            <Route path="/profile/billing" element={<BillingScreen />} />
-            </Route>
           </Route>
         </Route>
       </Routes>

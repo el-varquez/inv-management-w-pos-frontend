@@ -15,11 +15,8 @@ type ModalState =
   | null;
 
 export const CashiersScreen = () => {
-  const { cashiers, activeCount, cashierCap, loading, error, refetch } =
-    useCashiers();
+  const { cashiers, activeCount, loading, error, refetch } = useCashiers();
   const [modal, setModal] = useState<ModalState>(null);
-
-  const atCap = cashierCap > 0 && activeCount >= cashierCap;
 
   const closeAndRefresh = () => {
     setModal(null);
@@ -37,7 +34,7 @@ export const CashiersScreen = () => {
               ? 'Loading cashiers…'
               : error
                 ? 'Could not load cashiers.'
-                : `${activeCount} of ${cashierCap} active cashier${cashierCap === 1 ? '' : 's'}`}
+                : `${activeCount} active cashier${activeCount === 1 ? '' : 's'}`}
           </p>
         </div>
         <div className="page-actions">
@@ -47,21 +44,11 @@ export const CashiersScreen = () => {
           <button
             className="btn btn-primary"
             onClick={() => setModal({ kind: 'create' })}
-            disabled={atCap}
-            title={atCap ? 'Deactivate a cashier to free up a slot' : undefined}
           >
             New cashier
           </button>
         </div>
       </div>
-
-      {atCap && !loading && !error && (
-        <div className="login-error" role="status" style={{ marginBottom: 16 }}>
-          <span aria-hidden="true">⚠</span>
-          You’ve reached your cashier limit of {cashierCap}. Deactivate a cashier
-          to add a new one.
-        </div>
-      )}
 
       <div className="card table-wrap">
         {error ? (
@@ -97,8 +84,8 @@ export const CashiersScreen = () => {
             <div className="state-emoji">🧑‍💼</div>
             <div className="state-title">No cashiers yet</div>
             <p className="state-msg">
-              Add cashier accounts so your team can ring up sales on the mobile
-              app.
+              Add cashier accounts so your team can ring up sales on the
+              register.
             </p>
             <button
               className="btn btn-primary"

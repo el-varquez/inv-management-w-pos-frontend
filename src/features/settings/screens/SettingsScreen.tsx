@@ -1,7 +1,16 @@
-import { useSettings } from '../hooks/useSettings';
+import { useSettings } from '../../../hooks/useSettings';
+import { UtangMarkupRow } from '../components/UtangMarkupRow';
 
 export const SettingsScreen = () => {
-  const { settings, loading, error, saving, saveError, setAcceptUtang } = useSettings();
+  const {
+    settings,
+    loading,
+    error,
+    saving,
+    saveError,
+    setAcceptUtang,
+    setDefaultUtangMarkup,
+  } = useSettings();
 
   const accept = settings?.acceptUtang ?? false;
 
@@ -59,6 +68,12 @@ export const SettingsScreen = () => {
                 <span className="switch-knob" />
               </button>
             </div>
+
+            <UtangMarkupRow
+              value={settings ? settings.defaultUtangMarkup : null}
+              disabled={loading || saving || !settings}
+              onSave={setDefaultUtangMarkup}
+            />
           </>
         )}
       </div>

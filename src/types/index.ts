@@ -6,6 +6,7 @@ export interface Item {
   barcode?: string;
   costPrice: number;
   sellingPrice: number;
+  utangMarkup: number | null;
   stock: number;
   lowStockThreshold: number;
   isLowStock: boolean;
@@ -78,6 +79,7 @@ export interface StoreSettings {
   address: string;
   receiptFooter: string;
   acceptUtang: boolean;
+  defaultUtangMarkup: number;
 }
 
 export interface Paged<T> {

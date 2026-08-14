@@ -39,6 +39,7 @@ export const ItemFormModal = ({
 
   const { settings } = useSettings();
   const defaultMarkup = settings?.defaultUtangMarkup ?? 0;
+  const acceptUtang = settings?.acceptUtang ?? false;
 
   const [utangMarkup, setUtangMarkup] = useState(
     item?.utangMarkup != null ? String(item.utangMarkup) : ''
@@ -204,23 +205,25 @@ export const ItemFormModal = ({
           </div>
         </div>
 
-        <div className="field">
-          <label htmlFor="utangMarkup">Utang markup (optional)</label>
-          <input
-            id="utangMarkup"
-            className="input"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder={`${defaultMarkup.toFixed(2)} (store default)`}
-            value={utangMarkup}
-            onChange={(e) => setUtangMarkup(e.target.value)}
-          />
-          <p className="utang-preview">
-            Utang price: <strong className="tnum">{peso.format(utangPrice)}</strong>
-            {markupValue === null ? ' — using the store default' : ''}
-          </p>
-        </div>
+        {acceptUtang && (
+          <div className="field">
+            <label htmlFor="utangMarkup">Utang markup (optional)</label>
+            <input
+              id="utangMarkup"
+              className="input"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder={`${defaultMarkup.toFixed(2)} (store default)`}
+              value={utangMarkup}
+              onChange={(e) => setUtangMarkup(e.target.value)}
+            />
+            <p className="utang-preview">
+              Utang price: <strong className="tnum">{peso.format(utangPrice)}</strong>
+              {markupValue === null ? ' — using the store default' : ''}
+            </p>
+          </div>
+        )}
 
         <div className="form-grid">
           <div className="field">

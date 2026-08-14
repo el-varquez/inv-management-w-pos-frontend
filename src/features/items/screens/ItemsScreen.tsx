@@ -289,7 +289,7 @@ const ItemRow = ({
           </span>
         )}
       </div>
-      <div className="item-sub">{item.sku ?? item.description ?? '—'}</div>
+      <div className="item-sub">{item.itemCode}</div>
     </td>
     <td className="item-sub-cat">
       <span className="cat-pill">{item.categoryName}</span>

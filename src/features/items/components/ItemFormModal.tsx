@@ -25,7 +25,7 @@ export const ItemFormModal = ({
   const { createItem, updateItem, loading, error } = useItemMutations();
 
   const [name, setName] = useState(item?.name ?? '');
-  const [sku, setSku] = useState(item?.sku ?? '');
+  const [itemCode, setItemCode] = useState(item?.itemCode ?? '');
   const [barcode, setBarcode] = useState(item?.barcode ?? '');
   const [description, setDescription] = useState(item?.description ?? '');
   const [costPrice, setCostPrice] = useState(
@@ -76,7 +76,7 @@ export const ItemFormModal = ({
     const payload = {
       name: name.trim(),
       description: description.trim() || undefined,
-      sku: sku.trim() || undefined,
+      itemCode: itemCode.trim() || undefined,
       barcode: barcode.trim() || undefined,
       costPrice: cost,
       sellingPrice: price,
@@ -106,6 +106,18 @@ export const ItemFormModal = ({
         )}
 
         <div className="field">
+          <label htmlFor="itemCode">Item Code</label>
+          <input
+            id="itemCode"
+            className="input"
+            type="text"
+            placeholder="Leave blank to auto-generate — e.g. 00001 or Coke 1L"
+            value={itemCode}
+            onChange={(e) => setItemCode(e.target.value)}
+          />
+        </div>
+
+        <div className="field">
           <label htmlFor="name">Item name</label>
           <input
             id="name"
@@ -128,18 +140,6 @@ export const ItemFormModal = ({
             placeholder="Scan or type, e.g. 4800016641234"
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="sku">SKU (optional)</label>
-          <input
-            id="sku"
-            className="input"
-            type="text"
-            placeholder="e.g. KOPIKO-TWIN-10"
-            value={sku}
-            onChange={(e) => setSku(e.target.value)}
           />
         </div>
 

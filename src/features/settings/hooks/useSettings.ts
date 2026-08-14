@@ -46,5 +46,33 @@ export const useSettings = () => {
     }
   };
 
-  return { settings, loading, error, saving, saveError, setAcceptUtang };
+  const setDefaultUtangMarkup = async (
+    defaultUtangMarkup: number
+  ): Promise<boolean> => {
+    if (!settings) return false;
+
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const next = { ...settings, defaultUtangMarkup };
+      await settingsService.update(next);
+      setSettings(next);
+      return true;
+    } catch (err) {
+      setSaveError(getApiErrorMessage(err, 'Failed to save settings.'));
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return {
+    settings,
+    loading,
+    error,
+    saving,
+    saveError,
+    setAcceptUtang,
+    setDefaultUtangMarkup,
+  };
 };

@@ -78,6 +78,7 @@ export interface StoreSettings {
   address: string;
   receiptFooter: string;
   acceptUtang: boolean;
+  defaultUtangMarkup: number;
 }
 
 export interface Paged<T> {

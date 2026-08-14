@@ -4,7 +4,7 @@ import { SearchSelect } from '../../../components/SearchSelect';
 import { useItemMutations } from '../hooks/useItemMutations';
 import { getApiErrorMessage } from '../../../services/apiError';
 import { peso } from '../../../lib/format';
-import { useSettings } from '../../settings/hooks/useSettings';
+import { useSettings } from '../../../hooks/useSettings';
 import { resolveUtangPrice } from '../../../lib/utangPricing';
 import type { Category, Item } from '../../../types';
 

@@ -1,5 +1,5 @@
-import api from '../../../services/api';
-import type { StoreSettings } from '../../../types';
+import api from './api';
+import type { StoreSettings } from '../types';
 
 export const settingsService = {
   get: async (): Promise<StoreSettings> => {

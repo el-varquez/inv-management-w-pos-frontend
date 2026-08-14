@@ -1,4 +1,4 @@
-import { useSettings } from '../hooks/useSettings';
+import { useSettings } from '../../../hooks/useSettings';
 import { UtangMarkupRow } from '../components/UtangMarkupRow';
 
 export const SettingsScreen = () => {

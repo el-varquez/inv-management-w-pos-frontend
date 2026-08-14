@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { settingsService } from '../services/settingsService';
-import type { StoreSettings } from '../../../types';
-import { getApiErrorMessage } from '../../../services/apiError';
+import type { StoreSettings } from '../types';
+import { getApiErrorMessage } from '../services/apiError';
 
 export const useSettings = () => {
   const [settings, setSettings] = useState<StoreSettings | null>(null);

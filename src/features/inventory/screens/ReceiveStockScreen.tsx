@@ -199,7 +199,7 @@ export const ReceiveStockScreen = () => {
             ref={scanRef}
             className="input"
             type="text"
-            placeholder="Scan barcode, or type SKU / name…"
+            placeholder="Scan barcode, or type item code / name…"
             value={term}
             autoFocus
             autoComplete="off"
@@ -237,7 +237,7 @@ export const ReceiveStockScreen = () => {
                   <span className="receive-result-sub">
                     {r.isComposite
                       ? 'built from components'
-                      : `${r.barcode ?? r.sku ?? '—'} · ${r.stock} on hand · ${peso.format(r.sellingPrice)}`}
+                      : `${r.barcode ?? r.itemCode} · ${r.stock} on hand · ${peso.format(r.sellingPrice)}`}
                   </span>
                 </li>
               ))}
@@ -293,7 +293,7 @@ export const ReceiveStockScreen = () => {
                   <td>
                     <div className="item-name">{l.item.name}</div>
                     <div className="item-sub">
-                      {l.item.barcode ?? l.item.sku ?? '—'}
+                      {l.item.barcode ?? l.item.itemCode}
                     </div>
                   </td>
                   <td className="num">

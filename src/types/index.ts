@@ -55,14 +55,15 @@ export interface Category {
 export interface LoginResult {
   token: string;
   name: string;
-  email: string;
+  username: string;
   role: string;
 }
 
 export interface Cashier {
   id: string;
   name: string;
-  email: string;
+  username: string;
+  email: string | null;
   isActive: boolean;
   createdAt: string;
 }

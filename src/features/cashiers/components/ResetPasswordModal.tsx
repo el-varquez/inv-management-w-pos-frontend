@@ -37,7 +37,7 @@ export const ResetPasswordModal = ({ cashier, onClose, onDone }: Props) => {
         )}
 
         <p className="state-msg" style={{ margin: '0 0 12px' }}>
-          Set a new password for <strong>{cashier.email}</strong>. Share it with
+          Set a new password for <strong>{cashier.username}</strong>. Share it with
           them directly — they’ll use it to sign in on the mobile app.
         </p>
 

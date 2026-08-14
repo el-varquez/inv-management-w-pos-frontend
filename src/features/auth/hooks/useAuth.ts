@@ -8,18 +8,18 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await authService.login(email, password);
+      const result = await authService.login(username, password);
       if (result.role === 'Cashier') {
         setError('Cashiers sign in on the register.');
         return;
       }
       setAuth(result.token, {
         name: result.name,
-        email: result.email,
+        username: result.username,
         role: result.role,
       });
     } catch (err) {

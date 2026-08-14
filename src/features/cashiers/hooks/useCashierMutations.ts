@@ -22,8 +22,9 @@ export const useCashierMutations = () => {
 
   const createCashier = (payload: {
     name: string;
-    email: string;
+    username: string;
     password: string;
+    email?: string;
   }) =>
     run(async () => {
       await cashierService.create(payload);

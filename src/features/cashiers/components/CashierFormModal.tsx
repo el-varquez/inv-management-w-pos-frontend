@@ -11,22 +11,25 @@ export const CashierFormModal = ({ onClose, onSaved }: Props) => {
   const { createCashier, loading, error } = useCashierMutations();
 
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const canSubmit =
     name.trim().length > 0 &&
-    email.trim().length > 0 &&
+    /^[a-zA-Z0-9._-]+$/.test(username.trim()) &&
     password.length >= 8;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
 
+    const trimmedEmail = email.trim();
     const ok = await createCashier({
       name: name.trim(),
-      email: email.trim(),
+      username: username.trim().toLowerCase(),
       password,
+      ...(trimmedEmail ? { email: trimmedEmail } : {}),
     });
 
     if (ok) onSaved();
@@ -61,7 +64,29 @@ export const CashierFormModal = ({ onClose, onSaved }: Props) => {
         </div>
 
         <div className="field">
-          <label htmlFor="cashier-email">Email</label>
+          <label htmlFor="cashier-username">Username</label>
+          <input
+            id="cashier-username"
+            className="input"
+            type="text"
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder="e.g. maria"
+            maxLength={64}
+            pattern="[a-zA-Z0-9._\-]+"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+          <span className="field-hint">
+            Letters, numbers, dots, underscores and hyphens. This is what they
+            sign in with.
+          </span>
+        </div>
+
+        <div className="field">
+          <label htmlFor="cashier-email">Email (optional)</label>
           <input
             id="cashier-email"
             className="input"
@@ -70,7 +95,6 @@ export const CashierFormModal = ({ onClose, onSaved }: Props) => {
             placeholder="cashier@store.ph"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
           />
         </div>
 

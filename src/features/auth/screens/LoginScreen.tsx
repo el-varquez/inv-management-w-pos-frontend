@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 export const LoginScreen = () => {
   const { login, loading, error, token } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   useEffect(() => {
@@ -14,7 +14,7 @@ export const LoginScreen = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(email, password);
+    await login(username, password);
   };
 
   return (
@@ -44,15 +44,17 @@ export const LoginScreen = () => {
         )}
 
         <div className="field">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="username">Username</label>
           <input
-            id="email"
+            id="username"
             className="input"
-            type="email"
+            type="text"
             autoComplete="username"
-            placeholder="you@store.ph"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder="admin"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
         </div>

@@ -101,7 +101,7 @@ export const CashiersScreen = () => {
                 <td>
                   <div className="item-name">{c.name}</div>
                 </td>
-                <td className="item-sub">{c.email}</td>
+                <td className="item-sub">{c.username}</td>
                 <td>
                   <span className={`badge ${c.isActive ? 'badge-ok' : 'badge-muted'}`}>
                     {c.isActive ? 'Active' : 'Inactive'}
@@ -176,7 +176,7 @@ const CashiersTable = ({ children }: { children: React.ReactNode }) => (
     <thead>
       <tr>
         <th>Name</th>
-        <th>Email</th>
+        <th>Username</th>
         <th>Status</th>
         <th className="num">Actions</th>
       </tr>

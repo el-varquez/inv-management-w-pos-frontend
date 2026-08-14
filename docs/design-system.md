@@ -80,6 +80,8 @@ Numbers: always `₱` + thousands separator + 2 decimals (`₱1,234.50`). Tabula
 
 **Inputs** — 1px `--line-strong` border, `--surface-2` or white bg, radius 10px, no outline; the money-entry pattern is a big Fraunces value with an invisible right-aligned input. Every modal auto-focuses its field (`autoFocus` + select-on-focus), Enter commits, Esc cancels.
 
+**Switch (toggle)** — 60×32px pill track, 26px white knob inset 3px, travelling left 3px → 31px on a .15s ease, knob carries `--shadow-sm`. Off track `--line-strong`; **on track `--green`** — a switch is an active-state control, so it takes the primary color and never `--gold` (gold stays reserved for utang-warn-over, even when the setting itself is about utang). Disabled: opacity .55, cursor not-allowed. Always paired with a 16px/700 name plus one line of 13px `--ink-3` help text, sitting in a `--surface-2` row (radius 10px, 18px padding). Carries `role="switch"` + `aria-checked`, labelled by the name — state is never conveyed by color alone.
+
 **Numpad** — 3-col grid, 56px keys, `--surface-2` bg, 1px `--line-strong`, digit 20px/600. Layout 1-9, C, 0, ⌫.
 
 **Dropdown** — caption label above a 52px trigger (white bg, radius 10px, 1.5px border: `--line-strong` closed, `--green` open; value left, caret right, caret flips when open). Menu floats 6px below: white card, 1px `--line` border, radius 10px, `--shadow`; options 13px/16px padding separated by hairlines; selected option = `--green-soft` bg + `--green-deep` text, weight 700. Hover: `--surface-2`.

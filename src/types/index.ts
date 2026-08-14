@@ -2,7 +2,7 @@ export interface Item {
   id: string;
   name: string;
   description?: string;
-  sku?: string;
+  itemCode: string;
   barcode?: string;
   costPrice: number;
   sellingPrice: number;
@@ -36,7 +36,7 @@ export interface SearchItem {
   id: string;
   name: string;
   barcode?: string;
-  sku?: string;
+  itemCode: string;
   stock: number;
   costPrice: number;
   sellingPrice: number;

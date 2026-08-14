@@ -63,18 +63,27 @@ export const QuickCreateItemModal = ({ scannedCode, onClose, onCreated }: Props)
         lowStockThreshold: 5,
         categoryId,
       });
-      onCreated({
-        id,
-        name: name.trim(),
-        barcode: barcode.trim() || undefined,
-        stock: 0,
-        costPrice: cost,
-        sellingPrice: price,
-        isActive: true,
-        isComposite: false,
-        categoryName:
-          categories.find((c) => c.id === categoryId)?.name ?? '',
-      });
+
+      const saved = await itemService
+        .search(barcode.trim() || name.trim(), 25)
+        .then((rows) => rows.find((r) => r.id === id))
+        .catch(() => undefined);
+
+      onCreated(
+        saved ?? {
+          id,
+          name: name.trim(),
+          barcode: barcode.trim() || undefined,
+          itemCode: '',
+          stock: 0,
+          costPrice: cost,
+          sellingPrice: price,
+          isActive: true,
+          isComposite: false,
+          categoryName:
+            categories.find((c) => c.id === categoryId)?.name ?? '',
+        }
+      );
     } catch (err) {
       setError(getApiErrorMessage(err, 'Could not create the item.'));
       setSaving(false);

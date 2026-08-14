@@ -4,13 +4,14 @@ import type { Item, ItemComponents, Paged, SearchItem } from '../../../types';
 export type CreateItemPayload = Omit<
   Item,
   | 'id'
+  | 'itemCode'
   | 'stock'
   | 'isLowStock'
   | 'isActive'
   | 'isComposite'
   | 'categoryName'
   | 'createdAt'
->;
+> & { itemCode?: string };
 
 export type UpdateItemPayload = CreateItemPayload & { isActive: boolean };
 

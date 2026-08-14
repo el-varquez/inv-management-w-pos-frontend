@@ -95,6 +95,7 @@ export const ItemFormModal = ({
     <Modal
       title={isEdit ? 'Edit item' : 'New item'}
       subtitle={isEdit ? item!.name : 'Add a product to your catalog'}
+      wide
       onClose={onClose}
     >
       <form onSubmit={handleSubmit}>
@@ -105,54 +106,56 @@ export const ItemFormModal = ({
           </div>
         )}
 
-        <div className="field">
-          <label htmlFor="itemCode">Item Code</label>
-          <input
-            id="itemCode"
-            className="input"
-            type="text"
-            placeholder="Leave blank to auto-generate — e.g. 00001 or Coke 1L"
-            value={itemCode}
-            onChange={(e) => setItemCode(e.target.value)}
-          />
+        <div className="form-grid">
+          <div className="field">
+            <label htmlFor="itemCode">Item Code</label>
+            <input
+              id="itemCode"
+              className="input"
+              type="text"
+              placeholder="Blank to auto-generate — e.g. 00001"
+              value={itemCode}
+              onChange={(e) => setItemCode(e.target.value)}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="name">Item name</label>
+            <input
+              id="name"
+              className="input"
+              type="text"
+              placeholder="e.g. Kopiko Black 3-in-1"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+              required
+            />
+          </div>
         </div>
 
-        <div className="field">
-          <label htmlFor="name">Item name</label>
-          <input
-            id="name"
-            className="input"
-            type="text"
-            placeholder="e.g. Kopiko Black 3-in-1"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoFocus
-            required
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="barcode">Barcode (optional)</label>
-          <input
-            id="barcode"
-            className="input"
-            type="text"
-            placeholder="Scan or type, e.g. 4800016641234"
-            value={barcode}
-            onChange={(e) => setBarcode(e.target.value)}
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="description">Description (optional)</label>
-          <input
-            id="description"
-            className="input"
-            type="text"
-            placeholder="Short note about this item"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
+        <div className="form-grid">
+          <div className="field">
+            <label htmlFor="barcode">Barcode (optional)</label>
+            <input
+              id="barcode"
+              className="input"
+              type="text"
+              placeholder="Scan or type, e.g. 4800016641234"
+              value={barcode}
+              onChange={(e) => setBarcode(e.target.value)}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="description">Description (optional)</label>
+            <input
+              id="description"
+              className="input"
+              type="text"
+              placeholder="Short note about this item"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
         </div>
 
         <div className="form-grid">
@@ -186,77 +189,80 @@ export const ItemFormModal = ({
           </div>
         </div>
 
-        <div className="field">
-          <label htmlFor="threshold">Low-stock threshold</label>
-          <input
-            id="threshold"
-            className="input"
-            type="number"
-            min="0"
-            step="1"
-            placeholder="0"
-            value={lowStockThreshold}
-            onChange={(e) => setLowStockThreshold(e.target.value)}
-          />
-        </div>
+        <div className="form-grid">
+          <div className="field">
+            <label htmlFor="category">Category</label>
+            {!addingCategory && (
+              <SearchSelect
+                id="category"
+                value={categoryId}
+                onChange={setCategoryId}
+                options={categories.map((c) => ({
+                  value: c.id,
+                  label: c.name,
+                }))}
+                placeholder="Select a category…"
+                actionLabel="+ New category…"
+                onAction={() => setAddingCategory(true)}
+              />
+            )}
 
-        <div className="field">
-          <label htmlFor="category">Category</label>
-          {!addingCategory && (
-            <SearchSelect
-              id="category"
-              value={categoryId}
-              onChange={setCategoryId}
-              options={categories.map((c) => ({ value: c.id, label: c.name }))}
-              placeholder="Select a category…"
-              actionLabel="+ New category…"
-              onAction={() => setAddingCategory(true)}
-            />
-          )}
-
-          {addingCategory && (
-            <>
-              <div className="cat-add-row">
-                <input
-                  className="input"
-                  type="text"
-                  placeholder="New category name"
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddCategory();
-                    }
-                  }}
-                />
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={handleAddCategory}
-                  disabled={catSaving || !newCategory.trim()}
-                >
-                  {catSaving ? 'Adding…' : 'Add'}
-                </button>
-                {categories.length > 0 && (
+            {addingCategory && (
+              <>
+                <div className="cat-add-row">
+                  <input
+                    className="input"
+                    type="text"
+                    placeholder="New category name"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCategory();
+                      }
+                    }}
+                  />
                   <button
                     type="button"
-                    className="btn btn-quiet btn-sm"
-                    onClick={() => {
-                      setAddingCategory(false);
-                      setCatError(null);
-                    }}
-                    disabled={catSaving}
+                    className="btn btn-ghost btn-sm"
+                    onClick={handleAddCategory}
+                    disabled={catSaving || !newCategory.trim()}
                   >
-                    Cancel
+                    {catSaving ? 'Adding…' : 'Add'}
                   </button>
-                )}
-              </div>
-              {catError && (
-                <p className="field-hint text-red">{catError}</p>
-              )}
-            </>
-          )}
+                  {categories.length > 0 && (
+                    <button
+                      type="button"
+                      className="btn btn-quiet btn-sm"
+                      onClick={() => {
+                        setAddingCategory(false);
+                        setCatError(null);
+                      }}
+                      disabled={catSaving}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+                {catError && <p className="field-hint text-red">{catError}</p>}
+              </>
+            )}
+          </div>
+
+          <div className="field">
+            <label htmlFor="threshold">Low-stock threshold</label>
+            <input
+              id="threshold"
+              className="input"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="0"
+              value={lowStockThreshold}
+              onChange={(e) => setLowStockThreshold(e.target.value)}
+            />
+          </div>
         </div>
 
         {isEdit && (

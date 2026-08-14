@@ -3,11 +3,18 @@ import { useEffect } from 'react';
 interface ModalProps {
   title: string;
   subtitle?: string;
+  wide?: boolean;
   onClose: () => void;
   children: React.ReactNode;
 }
 
-export const Modal = ({ title, subtitle, onClose, children }: ModalProps) => {
+export const Modal = ({
+  title,
+  subtitle,
+  wide,
+  onClose,
+  children,
+}: ModalProps) => {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -19,7 +26,7 @@ export const Modal = ({ title, subtitle, onClose, children }: ModalProps) => {
   return (
     <div className="modal-overlay" onMouseDown={onClose}>
       <div
-        className="modal-card"
+        className={wide ? 'modal-card is-wide' : 'modal-card'}
         role="dialog"
         aria-modal="true"
         aria-label={title}

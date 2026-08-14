@@ -597,11 +597,13 @@ select.input {
 }
 .cat-add-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 .cat-add-row .input {
   flex: 1;
+  min-width: 150px;
 }
 
 .component-rows {
@@ -713,6 +715,9 @@ select.input {
   box-shadow: var(--shadow);
   padding: 26px 26px 22px;
   animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.modal-card.is-wide {
+  max-width: 720px;
 }
 .modal-head {
   display: flex;

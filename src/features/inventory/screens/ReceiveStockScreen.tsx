@@ -43,6 +43,7 @@ export const ReceiveStockScreen = () => {
   const scanRef = useRef<HTMLInputElement>(null);
   const { results, searching } = useItemSearch(term);
   const { receiveStock, loading, error, clearError } = useReceiveStock();
+  const pickable = results.filter((r) => r.tracksStock);
 
   // Draft survives accidental navigation; beforeunload covers close/refresh.
   useEffect(() => {
@@ -71,7 +72,7 @@ export const ReceiveStockScreen = () => {
   };
 
   const addItem = (item: SearchItem) => {
-    if (item.isComposite) return;
+    if (item.isComposite || !item.tracksStock) return;
     setSuccess(null);
     setLines((prev) => {
       const existing = prev.find((l) => l.item.id === item.id);
@@ -106,12 +107,14 @@ export const ReceiveStockScreen = () => {
     } catch {
       return; // search failed; leave the term for the user to retry
     }
-    const exact = hits.find((h) => h.barcode === code && !h.isComposite);
+    const exact = hits.find(
+      (h) => h.barcode === code && !h.isComposite && h.tracksStock
+    );
     if (exact) {
       addItem(exact);
       return;
     }
-    const addable = hits.filter((h) => !h.isComposite);
+    const addable = hits.filter((h) => !h.isComposite && h.tracksStock);
     if (addable.length === 1) {
       addItem(addable[0]);
       return;
@@ -215,7 +218,7 @@ export const ReceiveStockScreen = () => {
           />
           {term.trim() && (
             <ul className="search-select-menu" role="listbox">
-              {results.map((r) => (
+              {pickable.map((r) => (
                 <li
                   key={r.id}
                   role="option"
@@ -241,7 +244,7 @@ export const ReceiveStockScreen = () => {
                   </span>
                 </li>
               ))}
-              {!searching && results.length === 0 && (
+              {!searching && pickable.length === 0 && (
                 <li
                   className="search-select-option search-select-action"
                   onMouseDown={(e) => {

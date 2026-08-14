@@ -62,6 +62,7 @@ export const QuickCreateItemModal = ({ scannedCode, onClose, onCreated }: Props)
         sellingPrice: price,
         utangMarkup: null,
         lowStockThreshold: 5,
+        tracksStock: true,
         categoryId,
       });
 
@@ -81,6 +82,7 @@ export const QuickCreateItemModal = ({ scannedCode, onClose, onCreated }: Props)
           sellingPrice: price,
           isActive: true,
           isComposite: false,
+          tracksStock: true,
           categoryName:
             categories.find((c) => c.id === categoryId)?.name ?? '',
         }

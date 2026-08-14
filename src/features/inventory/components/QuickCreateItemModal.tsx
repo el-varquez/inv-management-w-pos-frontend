@@ -60,6 +60,7 @@ export const QuickCreateItemModal = ({ scannedCode, onClose, onCreated }: Props)
         barcode: barcode.trim() || undefined,
         costPrice: cost,
         sellingPrice: price,
+        utangMarkup: null,
         lowStockThreshold: 5,
         categoryId,
       });

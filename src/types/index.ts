@@ -6,6 +6,7 @@ export interface Item {
   barcode?: string;
   costPrice: number;
   sellingPrice: number;
+  utangMarkup: number | null;
   stock: number;
   lowStockThreshold: number;
   isLowStock: boolean;

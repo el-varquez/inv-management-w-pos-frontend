@@ -1454,6 +1454,14 @@ select.input {
   font-weight: 600;
   margin: 4px 0 0;
 }
+.utang-preview {
+  color: var(--ink-3);
+  font-size: 12.5px;
+  margin: 8px 0 0;
+}
+.utang-preview strong {
+  color: var(--ink);
+}
 
 .switch {
   flex-shrink: 0;

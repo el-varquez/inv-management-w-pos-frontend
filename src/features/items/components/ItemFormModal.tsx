@@ -4,6 +4,8 @@ import { SearchSelect } from '../../../components/SearchSelect';
 import { useItemMutations } from '../hooks/useItemMutations';
 import { getApiErrorMessage } from '../../../services/apiError';
 import { peso } from '../../../lib/format';
+import { useSettings } from '../../settings/hooks/useSettings';
+import { resolveUtangPrice } from '../../../lib/utangPricing';
 import type { Category, Item } from '../../../types';
 
 interface Props {
@@ -34,6 +36,13 @@ export const ItemFormModal = ({
   const [sellingPrice, setSellingPrice] = useState(
     item ? String(item.sellingPrice) : ''
   );
+
+  const { settings } = useSettings();
+  const defaultMarkup = settings?.defaultUtangMarkup ?? 0;
+
+  const [utangMarkup, setUtangMarkup] = useState(
+    item?.utangMarkup != null ? String(item.utangMarkup) : ''
+  );
   const [lowStockThreshold, setLowStockThreshold] = useState(
     item ? String(item.lowStockThreshold) : '0'
   );
@@ -48,6 +57,9 @@ export const ItemFormModal = ({
   const cost = Number(costPrice);
   const price = Number(sellingPrice);
   const margin = price > 0 && cost >= 0 ? price - cost : 0;
+
+  const markupValue = utangMarkup.trim() === '' ? null : Number(utangMarkup);
+  const utangPrice = resolveUtangPrice(price > 0 ? price : 0, markupValue, defaultMarkup);
 
   const canSubmit =
     name.trim().length > 0 && price > 0 && cost >= 0 && categoryId !== '';
@@ -80,6 +92,7 @@ export const ItemFormModal = ({
       barcode: barcode.trim() || undefined,
       costPrice: cost,
       sellingPrice: price,
+      utangMarkup: markupValue,
       lowStockThreshold: parseInt(lowStockThreshold, 10) || 0,
       categoryId,
     };
@@ -187,6 +200,24 @@ export const ItemFormModal = ({
               required
             />
           </div>
+        </div>
+
+        <div className="field">
+          <label htmlFor="utangMarkup">Utang markup (optional)</label>
+          <input
+            id="utangMarkup"
+            className="input"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder={`${defaultMarkup.toFixed(2)} (store default)`}
+            value={utangMarkup}
+            onChange={(e) => setUtangMarkup(e.target.value)}
+          />
+          <p className="utang-preview">
+            Utang price: <strong className="tnum">{peso.format(utangPrice)}</strong>
+            {markupValue === null ? ' — using the store default' : ''}
+          </p>
         </div>
 
         <div className="form-grid">

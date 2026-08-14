@@ -392,6 +392,9 @@ table.ledger {
 .stock-num {
   font-weight: 700;
 }
+.stock-na {
+  color: var(--ink-3);
+}
 .cat-pill {
   font-size: 12px;
   font-weight: 600;
@@ -594,6 +597,20 @@ select.input {
 .field-hint {
   font-size: 12.5px;
   margin: -8px 0 14px;
+}
+.field-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.check-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-3);
+  cursor: pointer;
 }
 .cat-add-row {
   display: flex;
@@ -1431,6 +1448,9 @@ select.input {
 .setting-control {
   flex-shrink: 0;
   width: 150px;
+}
+.setting-control-wide {
+  width: 220px;
 }
 .peso-input {
   position: relative;

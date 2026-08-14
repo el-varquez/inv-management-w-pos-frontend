@@ -66,6 +66,27 @@ export const useSettings = () => {
     }
   };
 
+  const setGcashWallet = async (
+    trackGcashWallet: boolean,
+    gcashFeeItemId: string | null
+  ): Promise<boolean> => {
+    if (!settings) return false;
+
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const next = { ...settings, trackGcashWallet, gcashFeeItemId };
+      await settingsService.update(next);
+      setSettings(next);
+      return true;
+    } catch (err) {
+      setSaveError(getApiErrorMessage(err, 'Failed to save settings.'));
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return {
     settings,
     loading,
@@ -74,5 +95,6 @@ export const useSettings = () => {
     saveError,
     setAcceptUtang,
     setDefaultUtangMarkup,
+    setGcashWallet,
   };
 };

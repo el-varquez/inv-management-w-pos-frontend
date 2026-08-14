@@ -1,4 +1,5 @@
 import { useSettings } from '../../../hooks/useSettings';
+import { GcashWalletRow } from '../components/GcashWalletRow';
 import { UtangMarkupRow } from '../components/UtangMarkupRow';
 
 export const SettingsScreen = () => {
@@ -10,6 +11,7 @@ export const SettingsScreen = () => {
     saveError,
     setAcceptUtang,
     setDefaultUtangMarkup,
+    setGcashWallet,
   } = useSettings();
 
   const accept = settings?.acceptUtang ?? false;
@@ -73,6 +75,13 @@ export const SettingsScreen = () => {
               value={settings ? settings.defaultUtangMarkup : null}
               disabled={loading || saving || !settings}
               onSave={setDefaultUtangMarkup}
+            />
+
+            <GcashWalletRow
+              trackGcashWallet={settings?.trackGcashWallet ?? false}
+              gcashFeeItemId={settings?.gcashFeeItemId ?? null}
+              disabled={loading || saving || !settings}
+              onSave={setGcashWallet}
             />
           </>
         )}

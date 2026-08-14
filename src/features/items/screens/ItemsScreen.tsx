@@ -297,14 +297,20 @@ const ItemRow = ({
     <td className="num tnum cost">{peso.format(item.costPrice)}</td>
     <td className="num tnum price">{peso.format(item.sellingPrice)}</td>
     <td className="num">
-      <span className="stock-cell">
-        <span className="stock-num tnum">{item.stock}</span>
-        {item.isLowStock ? (
-          <span className="badge badge-low">Low</span>
-        ) : (
-          <span className="badge badge-ok">OK</span>
-        )}
-      </span>
+      {item.tracksStock ? (
+        <span className="stock-cell">
+          <span className="stock-num tnum">{item.stock}</span>
+          {item.isLowStock ? (
+            <span className="badge badge-low">Low</span>
+          ) : (
+            <span className="badge badge-ok">OK</span>
+          )}
+        </span>
+      ) : (
+        <span className="stock-na" title="Not a physical item">
+          —
+        </span>
+      )}
     </td>
     {isAdmin && (
       <td className="num">

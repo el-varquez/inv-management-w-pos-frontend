@@ -46,6 +46,7 @@ export const ItemFormModal = ({
   const [lowStockThreshold, setLowStockThreshold] = useState(
     item ? String(item.lowStockThreshold) : '0'
   );
+  const [tracksStock, setTracksStock] = useState(item?.tracksStock ?? true);
   const [categoryId, setCategoryId] = useState(item?.categoryId ?? '');
   const [isActive, setIsActive] = useState(item?.isActive ?? true);
 
@@ -94,6 +95,7 @@ export const ItemFormModal = ({
       sellingPrice: price,
       utangMarkup: markupValue,
       lowStockThreshold: parseInt(lowStockThreshold, 10) || 0,
+      tracksStock,
       categoryId,
     };
 
@@ -282,17 +284,33 @@ export const ItemFormModal = ({
           </div>
 
           <div className="field">
-            <label htmlFor="threshold">Low-stock threshold</label>
-            <input
-              id="threshold"
-              className="input"
-              type="number"
-              min="0"
-              step="1"
-              placeholder="0"
-              value={lowStockThreshold}
-              onChange={(e) => setLowStockThreshold(e.target.value)}
-            />
+            <div className="field-label-row">
+              <label htmlFor="threshold">Low-stock threshold</label>
+              <label className="check-inline">
+                <input
+                  type="checkbox"
+                  checked={!tracksStock}
+                  onChange={(e) => setTracksStock(!e.target.checked)}
+                />
+                N/A
+              </label>
+            </div>
+            {tracksStock ? (
+              <input
+                id="threshold"
+                className="input"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="0"
+                value={lowStockThreshold}
+                onChange={(e) => setLowStockThreshold(e.target.value)}
+              />
+            ) : (
+              <p className="field-hint">
+                Not a physical item — no stock is tracked and no low-stock alerts are sent.
+              </p>
+            )}
           </div>
         </div>
 

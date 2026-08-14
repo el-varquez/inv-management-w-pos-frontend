@@ -12,6 +12,7 @@ export interface Item {
   isLowStock: boolean;
   isActive: boolean;
   isComposite: boolean;
+  tracksStock: boolean;
   categoryId: string;
   categoryName: string;
   createdAt: string;
@@ -43,6 +44,7 @@ export interface SearchItem {
   sellingPrice: number;
   isActive: boolean;
   isComposite: boolean;
+  tracksStock: boolean;
   categoryName: string;
 }
 
@@ -80,6 +82,8 @@ export interface StoreSettings {
   receiptFooter: string;
   acceptUtang: boolean;
   defaultUtangMarkup: number;
+  trackGcashWallet: boolean;
+  gcashFeeItemId: string | null;
 }
 
 export interface Paged<T> {

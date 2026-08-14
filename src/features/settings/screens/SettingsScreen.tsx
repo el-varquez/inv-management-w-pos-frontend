@@ -71,11 +71,13 @@ export const SettingsScreen = () => {
               </button>
             </div>
 
-            <UtangMarkupRow
-              value={settings ? settings.defaultUtangMarkup : null}
-              disabled={loading || saving || !settings}
-              onSave={setDefaultUtangMarkup}
-            />
+            {accept && (
+              <UtangMarkupRow
+                value={settings ? settings.defaultUtangMarkup : null}
+                disabled={loading || saving || !settings}
+                onSave={setDefaultUtangMarkup}
+              />
+            )}
 
             <GcashWalletRow
               trackGcashWallet={settings?.trackGcashWallet ?? false}

@@ -73,6 +73,13 @@ export interface CashierList {
   activeCount: number;
 }
 
+export interface StoreSettings {
+  storeName: string;
+  address: string;
+  receiptFooter: string;
+  acceptUtang: boolean;
+}
+
 export interface Paged<T> {
   items: T[];
   page: number;

@@ -179,6 +179,10 @@ a {
   color: var(--green-deep);
   background: var(--green-soft);
 }
+.badge-late {
+  color: var(--gold);
+  background: var(--gold-soft);
+}
 
 .shell {
   min-height: 100svh;
@@ -575,6 +579,45 @@ table.ledger {
 }
 .text-muted {
   color: var(--ink-3);
+}
+.text-gold {
+  color: var(--gold);
+}
+.read-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.read-row:last-child {
+  border-bottom: none;
+}
+.read-label {
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.read-hint {
+  margin: 3px 0 0;
+  color: var(--ink-3);
+}
+.read-value {
+  font-weight: 600;
+  color: var(--ink);
+}
+.ledger tr.row-voided td .item-name {
+  text-decoration: line-through;
+  color: var(--ink-3);
+}
+.ledger tr.row-voided td.num {
+  text-decoration: line-through;
+  color: var(--ink-3);
+}
+.shift-closed-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 .qty-delta {
   font-weight: 700;

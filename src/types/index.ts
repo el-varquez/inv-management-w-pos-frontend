@@ -82,8 +82,58 @@ export interface StoreSettings {
   receiptFooter: string;
   acceptUtang: boolean;
   defaultUtangMarkup: number;
-  trackGcashWallet: boolean;
-  gcashFeeItemId: string | null;
+  trackEWalletFloat: boolean;
+  eWalletFeeItemId: string | null;
+}
+
+export interface Shift {
+  id: string;
+  number: number;
+  isClosed: boolean;
+  closedLate: boolean;
+  openedAt: string;
+  closedAt: string | null;
+  startingCash: number;
+  netSales: number | null;
+  expectedCash: number | null;
+  countedCash: number | null;
+  cashVariance: number | null;
+}
+
+export interface DrawerMovement {
+  id: string;
+  amount: number;
+  note: string;
+  isVoided: boolean;
+  createdAt: string;
+}
+
+export interface ShiftRead {
+  id: string;
+  number: number;
+  isClosed: boolean;
+  closedLate: boolean;
+  openedAt: string;
+  closedAt: string | null;
+  startingCash: number;
+  startingCashOriginal: number | null;
+  startingCashCorrectionReason: string | null;
+  netSales: number;
+  transactionCount: number;
+  cashSales: number;
+  gcashSales: number;
+  mayaSales: number;
+  drawerMovementsNet: number;
+  expectedCash: number;
+  countedCash: number | null;
+  countedCashOriginal: number | null;
+  correctionReason: string | null;
+  cashVariance: number | null;
+  startingEWalletBalance: number | null;
+  expectedEWalletBalance: number | null;
+  countedEWalletBalance: number | null;
+  eWalletVariance: number | null;
+  movements: DrawerMovement[];
 }
 
 export interface Paged<T> {

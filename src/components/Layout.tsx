@@ -47,6 +47,13 @@ const CashiersIcon = () => (
   </svg>
 );
 
+const ShiftsIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3.2 1.9" />
+  </svg>
+);
+
 const SettingsIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="3.2" />
@@ -108,6 +115,13 @@ export const Layout = () => {
             <span className="nav-label">Reports</span>
             <span className="nav-tiny">Reports</span>
           </NavLink>
+          {isAdmin && (
+            <NavLink to="/shifts" className={navLinkClass}>
+              <ShiftsIcon />
+              <span className="nav-label">Shifts</span>
+              <span className="nav-tiny">Shifts</span>
+            </NavLink>
+          )}
           {isAdmin && (
             <NavLink to="/cashiers" className={navLinkClass}>
               <CashiersIcon />

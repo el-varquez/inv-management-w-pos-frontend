@@ -5,15 +5,15 @@ import { getApiErrorMessage } from '../../../services/apiError';
 import type { Item } from '../../../types';
 
 interface Props {
-  trackGcashWallet: boolean;
-  gcashFeeItemId: string | null;
+  trackEWalletFloat: boolean;
+  eWalletFeeItemId: string | null;
   disabled: boolean;
   onSave: (track: boolean, feeItemId: string | null) => Promise<boolean>;
 }
 
-export const GcashWalletRow = ({
-  trackGcashWallet,
-  gcashFeeItemId,
+export const EWalletRow = ({
+  trackEWalletFloat,
+  eWalletFeeItemId,
   disabled,
   onSave,
 }: Props) => {
@@ -42,32 +42,32 @@ export const GcashWalletRow = ({
     <>
       <div className="setting-row">
         <div className="setting-copy">
-          <div className="setting-name" id="track-gcash-label">
-            Track GCash wallet
+          <div className="setting-name" id="track-ewallet-label">
+            Track e-wallet float
           </div>
           <p className="setting-desc">
-            Declare a starting GCash balance at shift open and reconcile it at
+            Declare a starting e-wallet balance at shift open and reconcile it at
             close.
           </p>
         </div>
         <button
           type="button"
           role="switch"
-          aria-checked={trackGcashWallet}
-          aria-labelledby="track-gcash-label"
-          className={`switch${trackGcashWallet ? ' switch-on' : ''}`}
+          aria-checked={trackEWalletFloat}
+          aria-labelledby="track-ewallet-label"
+          className={`switch${trackEWalletFloat ? ' switch-on' : ''}`}
           disabled={disabled}
-          onClick={() => onSave(!trackGcashWallet, gcashFeeItemId)}
+          onClick={() => onSave(!trackEWalletFloat, eWalletFeeItemId)}
         >
           <span className="switch-knob" />
         </button>
       </div>
 
-      {trackGcashWallet && (
+      {trackEWalletFloat && (
         <div className="setting-row">
           <div className="setting-copy">
-            <div className="setting-name" id="gcash-fee-item-label">
-              GCash fee item
+            <div className="setting-name" id="ewallet-fee-item-label">
+              E-wallet fee item
             </div>
             <p className="setting-desc">
               Cash-in and cash-out fees are rung up as this item at ₱1 × the fee
@@ -77,9 +77,9 @@ export const GcashWalletRow = ({
           </div>
           <div className="setting-control setting-control-wide">
             <SearchSelect
-              id="gcashFeeItem"
-              value={gcashFeeItemId ?? ''}
-              onChange={(id) => onSave(trackGcashWallet, id || null)}
+              id="eWalletFeeItem"
+              value={eWalletFeeItemId ?? ''}
+              onChange={(id) => onSave(trackEWalletFloat, id || null)}
               options={items.map((i) => ({ value: i.id, label: i.name }))}
               placeholder="Select the fee item…"
             />

@@ -16,6 +16,8 @@ import { SalesReportScreen } from './features/reports/screens/SalesReportScreen'
 import { ExpenseReportScreen } from './features/reports/screens/ExpenseReportScreen';
 import { ProfitReportScreen } from './features/reports/screens/ProfitReportScreen';
 import { BestSellersScreen } from './features/reports/screens/BestSellersScreen';
+import { ShiftsScreen } from './features/shifts/screens/ShiftsScreen';
+import { ShiftDetailScreen } from './features/shifts/screens/ShiftDetailScreen';
 import { SettingsScreen } from './features/settings/screens/SettingsScreen';
 
 export default function App() {
@@ -58,6 +60,8 @@ export default function App() {
               path="/reports/best-sellers"
               element={<BestSellersScreen />}
             />
+            <Route path="/shifts" element={<ShiftsScreen />} />
+            <Route path="/shifts/:id" element={<ShiftDetailScreen />} />
             <Route path="/cashiers" element={<CashiersScreen />} />
             <Route path="/settings" element={<SettingsScreen />} />
           </Route>

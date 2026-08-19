@@ -56,10 +56,11 @@ export interface Category {
 }
 
 export interface LoginResult {
-  token: string;
-  name: string;
-  username: string;
-  role: string;
+  token: string | null;
+  name: string | null;
+  username: string | null;
+  role: string | null;
+  passwordSetupRequired: boolean;
 }
 
 export interface Cashier {

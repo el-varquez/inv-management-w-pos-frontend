@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal } from '../../../components/Modal';
+import { NewPasswordFields } from '../../../components/NewPasswordFields';
 import { PasswordInput } from '../../../components/PasswordInput';
+import { validateNewPassword } from '../../../lib/validateNewPassword';
 import { useAuth } from '../hooks/useAuth';
 
 export const LoginScreen = () => {
@@ -34,12 +36,9 @@ export const LoginScreen = () => {
 
   const handleSetup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword.length < 8) {
-      setFormError('Password must be at least 8 characters.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setFormError("Passwords don't match.");
+    const validationError = validateNewPassword(newPassword, confirmPassword);
+    if (validationError) {
+      setFormError(validationError);
       return;
     }
     setFormError(null);
@@ -83,29 +82,13 @@ export const LoginScreen = () => {
             </div>
           )}
 
-          <div className="field">
-            <label htmlFor="new-password">New password</label>
-            <PasswordInput
-              id="new-password"
-              autoComplete="new-password"
-              placeholder="••••••••"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="field">
-            <label htmlFor="confirm-password">Confirm password</label>
-            <PasswordInput
-              id="confirm-password"
-              autoComplete="new-password"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
+          <NewPasswordFields
+            idPrefix="setup"
+            newPassword={newPassword}
+            confirmPassword={confirmPassword}
+            onNewPasswordChange={setNewPassword}
+            onConfirmPasswordChange={setConfirmPassword}
+          />
 
           <button
             type="submit"

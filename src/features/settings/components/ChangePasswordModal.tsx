@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { Modal } from '../../../components/Modal';
+import { PasswordInput } from '../../../components/PasswordInput';
 import { NewPasswordFields } from '../../../components/NewPasswordFields';
 import { validateNewPassword } from '../../../lib/validateNewPassword';
-import { useCashierMutations } from '../hooks/useCashierMutations';
-import type { Cashier } from '../../../types';
+import { useChangePassword } from '../hooks/useChangePassword';
 
 interface Props {
-  cashier: Cashier;
   onClose: () => void;
   onDone: () => void;
 }
 
-export const ResetPasswordModal = ({ cashier, onClose, onDone }: Props) => {
-  const { resetPassword, loading, error } = useCashierMutations();
+export const ChangePasswordModal = ({ onClose, onDone }: Props) => {
+  const { changePassword, loading, error } = useChangePassword();
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
@@ -27,16 +27,12 @@ export const ResetPasswordModal = ({ cashier, onClose, onDone }: Props) => {
       return;
     }
     setFormError(null);
-    const ok = await resetPassword(cashier.id, newPassword);
+    const ok = await changePassword(currentPassword, newPassword);
     if (ok) onDone();
   };
 
   return (
-    <Modal
-      title="Reset password"
-      subtitle={cashier.name}
-      onClose={onClose}
-    >
+    <Modal title="Change password" onClose={onClose}>
       <form onSubmit={handleSubmit}>
         {shownError && (
           <div className="login-error" role="alert">
@@ -45,18 +41,25 @@ export const ResetPasswordModal = ({ cashier, onClose, onDone }: Props) => {
           </div>
         )}
 
-        <p className="state-msg" style={{ margin: '0 0 12px' }}>
-          Set a new password for <strong>{cashier.username}</strong>. Share it with
-          them directly — they’ll use it to sign in on the register.
-        </p>
+        <div className="field">
+          <label htmlFor="change-current-password">Current password</label>
+          <PasswordInput
+            id="change-current-password"
+            autoComplete="current-password"
+            placeholder="••••••••"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            autoFocus
+            required
+          />
+        </div>
 
         <NewPasswordFields
-          idPrefix="reset"
+          idPrefix="change"
           newPassword={newPassword}
           confirmPassword={confirmPassword}
           onNewPasswordChange={setNewPassword}
           onConfirmPasswordChange={setConfirmPassword}
-          autoFocus
         />
 
         <div className="modal-actions">
@@ -70,7 +73,7 @@ export const ResetPasswordModal = ({ cashier, onClose, onDone }: Props) => {
           </button>
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? <span className="spinner" aria-hidden="true" /> : null}
-            {loading ? 'Saving…' : 'Set new password'}
+            {loading ? 'Saving…' : 'Change password'}
           </button>
         </div>
       </form>

@@ -10,7 +10,7 @@ export const cashierService = {
   create: async (payload: {
     name: string;
     username: string;
-    password: string;
+    password?: string;
     email?: string;
   }): Promise<{ id: string }> => {
     const { data } = await api.post<{ id: string }>('/cashiers', payload);

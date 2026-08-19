@@ -23,7 +23,7 @@ export const useCashierMutations = () => {
   const createCashier = (payload: {
     name: string;
     username: string;
-    password: string;
+    password?: string;
     email?: string;
   }) =>
     run(async () => {

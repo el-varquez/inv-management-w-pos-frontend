@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Modal } from '../../../components/Modal';
+import { PasswordInput } from '../../../components/PasswordInput';
 import { useCashierMutations } from '../hooks/useCashierMutations';
 
 interface Props {
@@ -18,7 +19,7 @@ export const CashierFormModal = ({ onClose, onSaved }: Props) => {
   const canSubmit =
     name.trim().length > 0 &&
     /^[a-zA-Z0-9._-]+$/.test(username.trim()) &&
-    password.length >= 8;
+    (password.length === 0 || password.length >= 8);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +29,7 @@ export const CashierFormModal = ({ onClose, onSaved }: Props) => {
     const ok = await createCashier({
       name: name.trim(),
       username: username.trim().toLowerCase(),
-      password,
+      ...(password ? { password } : {}),
       ...(trimmedEmail ? { email: trimmedEmail } : {}),
     });
 
@@ -99,18 +100,19 @@ export const CashierFormModal = ({ onClose, onSaved }: Props) => {
         </div>
 
         <div className="field">
-          <label htmlFor="cashier-password">Password</label>
-          <input
+          <label htmlFor="cashier-password">Password (optional)</label>
+          <PasswordInput
             id="cashier-password"
-            className="input"
-            type="password"
             autoComplete="new-password"
             placeholder="At least 8 characters"
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
           />
+          <span className="field-hint">
+            Leave blank to let the cashier set their own password at the
+            register on first login.
+          </span>
         </div>
 
         <div className="modal-actions">

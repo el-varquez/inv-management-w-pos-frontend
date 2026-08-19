@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal } from '../../../components/Modal';
-import { PasswordInput } from '../../../components/PasswordInput';
+import { NewPasswordFields } from '../../../components/NewPasswordFields';
+import { validateNewPassword } from '../../../lib/validateNewPassword';
 import { useCashierMutations } from '../hooks/useCashierMutations';
 import type { Cashier } from '../../../types';
 
@@ -12,14 +13,21 @@ interface Props {
 
 export const ResetPasswordModal = ({ cashier, onClose, onDone }: Props) => {
   const { resetPassword, loading, error } = useCashierMutations();
-  const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const canSubmit = password.length >= 8;
+  const shownError = formError ?? error;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canSubmit) return;
-    const ok = await resetPassword(cashier.id, password);
+    const validationError = validateNewPassword(newPassword, confirmPassword);
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+    setFormError(null);
+    const ok = await resetPassword(cashier.id, newPassword);
     if (ok) onDone();
   };
 
@@ -30,31 +38,26 @@ export const ResetPasswordModal = ({ cashier, onClose, onDone }: Props) => {
       onClose={onClose}
     >
       <form onSubmit={handleSubmit}>
-        {error && (
+        {shownError && (
           <div className="login-error" role="alert">
             <span aria-hidden="true">⚠</span>
-            {error}
+            {shownError}
           </div>
         )}
 
         <p className="state-msg" style={{ margin: '0 0 12px' }}>
           Set a new password for <strong>{cashier.username}</strong>. Share it with
-          them directly — they’ll use it to sign in on the mobile app.
+          them directly — they’ll use it to sign in on the register.
         </p>
 
-        <div className="field">
-          <label htmlFor="reset-password">New password</label>
-          <PasswordInput
-            id="reset-password"
-            autoComplete="new-password"
-            placeholder="At least 8 characters"
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoFocus
-            required
-          />
-        </div>
+        <NewPasswordFields
+          idPrefix="reset"
+          newPassword={newPassword}
+          confirmPassword={confirmPassword}
+          onNewPasswordChange={setNewPassword}
+          onConfirmPasswordChange={setConfirmPassword}
+          autoFocus
+        />
 
         <div className="modal-actions">
           <button
@@ -65,11 +68,7 @@ export const ResetPasswordModal = ({ cashier, onClose, onDone }: Props) => {
           >
             Cancel
           </button>
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading || !canSubmit}
-          >
+          <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? <span className="spinner" aria-hidden="true" /> : null}
             {loading ? 'Saving…' : 'Set new password'}
           </button>

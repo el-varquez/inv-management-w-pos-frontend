@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Modal } from '../../../components/Modal';
+import { PasswordInput } from '../../../components/PasswordInput';
 import { useCashierMutations } from '../hooks/useCashierMutations';
 import type { Cashier } from '../../../types';
 
@@ -43,10 +44,8 @@ export const ResetPasswordModal = ({ cashier, onClose, onDone }: Props) => {
 
         <div className="field">
           <label htmlFor="reset-password">New password</label>
-          <input
+          <PasswordInput
             id="reset-password"
-            className="input"
-            type="password"
             autoComplete="new-password"
             placeholder="At least 8 characters"
             minLength={8}

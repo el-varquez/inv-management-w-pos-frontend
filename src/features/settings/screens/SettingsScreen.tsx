@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useSettings } from '../../../hooks/useSettings';
+import { ChangePasswordModal } from '../components/ChangePasswordModal';
 import { GcashWalletRow } from '../components/GcashWalletRow';
 import { UtangMarkupRow } from '../components/UtangMarkupRow';
 
@@ -13,6 +15,9 @@ export const SettingsScreen = () => {
     setDefaultUtangMarkup,
     setGcashWallet,
   } = useSettings();
+
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordSaved, setPasswordSaved] = useState(false);
 
   const accept = settings?.acceptUtang ?? false;
 
@@ -85,9 +90,39 @@ export const SettingsScreen = () => {
               disabled={loading || saving || !settings}
               onSave={setGcashWallet}
             />
+
+            <div className="setting-row">
+              <div className="setting-copy">
+                <div className="setting-name">Change password</div>
+                <p className="setting-desc">
+                  Update the password for this admin account.
+                </p>
+              </div>
+              <div className="setting-control">
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => setChangingPassword(true)}
+                >
+                  Change password
+                </button>
+                {passwordSaved && <p className="setting-saved">Saved</p>}
+              </div>
+            </div>
           </>
         )}
       </div>
+
+      {changingPassword && (
+        <ChangePasswordModal
+          onClose={() => setChangingPassword(false)}
+          onDone={() => {
+            setChangingPassword(false);
+            setPasswordSaved(true);
+            window.setTimeout(() => setPasswordSaved(false), 2000);
+          }}
+        />
+      )}
     </>
   );
 };

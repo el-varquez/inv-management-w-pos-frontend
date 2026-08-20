@@ -66,16 +66,16 @@ export const useSettings = () => {
     }
   };
 
-  const setGcashWallet = async (
-    trackGcashWallet: boolean,
-    gcashFeeItemId: string | null
+  const setEWalletFloat = async (
+    trackEWalletFloat: boolean,
+    eWalletFeeItemId: string | null
   ): Promise<boolean> => {
     if (!settings) return false;
 
     setSaving(true);
     setSaveError(null);
     try {
-      const next = { ...settings, trackGcashWallet, gcashFeeItemId };
+      const next = { ...settings, trackEWalletFloat, eWalletFeeItemId };
       await settingsService.update(next);
       setSettings(next);
       return true;
@@ -95,6 +95,6 @@ export const useSettings = () => {
     saveError,
     setAcceptUtang,
     setDefaultUtangMarkup,
-    setGcashWallet,
+    setEWalletFloat,
   };
 };

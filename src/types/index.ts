@@ -87,6 +87,19 @@ export interface StoreSettings {
   eWalletFeeItemId: string | null;
 }
 
+export interface DaySummary {
+  id: string;
+  number: number;
+  isClosed: boolean;
+  closedLate: boolean;
+  openedAt: string;
+  closedAt: string | null;
+  netSales: number | null;
+  countedCash: number | null;
+  cashVariance: number | null;
+  shiftCount: number;
+}
+
 export interface Paged<T> {
   items: T[];
   page: number;

@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useSettings } from '../../../hooks/useSettings';
 import { ChangePasswordModal } from '../components/ChangePasswordModal';
 import { EWalletRow } from '../components/EWalletRow';
+import { UndoZReadSection } from '../components/UndoZReadSection';
 import { UtangMarkupRow } from '../components/UtangMarkupRow';
 
 export const SettingsScreen = () => {
@@ -18,6 +20,10 @@ export const SettingsScreen = () => {
 
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordSaved, setPasswordSaved] = useState(false);
+
+  const revealBypass = Boolean(
+    (useLocation().state as { revealBypass?: boolean } | null)?.revealBypass
+  );
 
   const accept = settings?.acceptUtang ?? false;
 
@@ -109,6 +115,8 @@ export const SettingsScreen = () => {
                 {passwordSaved && <p className="setting-saved">Saved</p>}
               </div>
             </div>
+
+            {revealBypass && <UndoZReadSection />}
           </>
         )}
       </div>

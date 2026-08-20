@@ -23,11 +23,19 @@ const dateFmt = new Intl.DateTimeFormat('en-PH', {
   day: 'numeric',
 });
 
+const timeFmt = new Intl.DateTimeFormat('en-PH', {
+  hour: 'numeric',
+  minute: '2-digit',
+});
+
 export const formatDateTime = (iso: string): string =>
   dateTimeFmt.format(new Date(iso));
 
 export const formatDate = (iso: string): string =>
   dateFmt.format(new Date(iso));
+
+export const formatTime = (iso: string): string =>
+  timeFmt.format(new Date(iso));
 
 export const signed = (n: number): string =>
   n > 0 ? `+${n}` : `${n}`;

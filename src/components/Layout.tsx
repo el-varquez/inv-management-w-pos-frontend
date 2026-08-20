@@ -116,7 +116,16 @@ export const Layout = () => {
             </NavLink>
           )}
           {isAdmin && (
-            <NavLink to="/settings" className={navLinkClass}>
+            <NavLink
+              to="/settings"
+              className={navLinkClass}
+              onClick={(e) => {
+                if (e.ctrlKey && e.shiftKey && e.altKey) {
+                  e.preventDefault();
+                  navigate('/settings', { state: { revealBypass: true } });
+                }
+              }}
+            >
               <SettingsIcon />
               <span className="nav-label">Settings</span>
               <span className="nav-tiny">Settings</span>

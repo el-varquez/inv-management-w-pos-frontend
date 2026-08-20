@@ -83,8 +83,8 @@ export interface StoreSettings {
   receiptFooter: string;
   acceptUtang: boolean;
   defaultUtangMarkup: number;
-  trackGcashWallet: boolean;
-  gcashFeeItemId: string | null;
+  trackEWalletFloat: boolean;
+  eWalletFeeItemId: string | null;
 }
 
 export interface Paged<T> {

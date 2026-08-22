@@ -17,6 +17,7 @@ import { ExpenseReportScreen } from './features/reports/screens/ExpenseReportScr
 import { ProfitReportScreen } from './features/reports/screens/ProfitReportScreen';
 import { BestSellersScreen } from './features/reports/screens/BestSellersScreen';
 import { SettingsScreen } from './features/settings/screens/SettingsScreen';
+import { UtangScreen } from './features/utang/screens/UtangScreen';
 
 export default function App() {
   return (
@@ -58,6 +59,7 @@ export default function App() {
               path="/reports/best-sellers"
               element={<BestSellersScreen />}
             />
+            <Route path="/utang" element={<UtangScreen />} />
             <Route path="/cashiers" element={<CashiersScreen />} />
             <Route path="/settings" element={<SettingsScreen />} />
           </Route>

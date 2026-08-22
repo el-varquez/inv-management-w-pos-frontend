@@ -337,3 +337,31 @@ export interface SalesTrend {
   totalPaidSales: number;
   totalUtangCharged: number;
 }
+export interface Suki {
+  id: string;
+  name: string;
+  phone: string | null;
+  balance: number;
+}
+
+export interface UtangLedgerEntry {
+  id: string;
+  type: 'Charge' | 'Payment';
+  amount: number;
+  markup: number;
+  transactionId: string | null;
+  receiptNumber: string | null;
+  note: string | null;
+  isVoided: boolean;
+  editedFrom: number | null;
+  createdAt: string;
+}
+
+export interface SukiLedger {
+  id: string;
+  name: string;
+  phone: string | null;
+  balance: number;
+  markupEarned: number;
+  entries: UtangLedgerEntry[];
+}

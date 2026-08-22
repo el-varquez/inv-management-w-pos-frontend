@@ -99,7 +99,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
             </p>
           </div>
         ) : (
-          <table className="table">
+          <table className="ledger">
             <thead>
               <tr>
                 <th>Date</th>
@@ -249,7 +249,7 @@ export const UtangScreen = () => {
             </button>
           </div>
         ) : loading ? (
-          <table className="table">
+          <table className="ledger">
             <thead>
               <tr>
                 <th>Suki</th>
@@ -290,7 +290,7 @@ export const UtangScreen = () => {
           </div>
         ) : (
           <>
-            <table className="table">
+            <table className="ledger">
               <thead>
                 <tr>
                   <th>Suki</th>

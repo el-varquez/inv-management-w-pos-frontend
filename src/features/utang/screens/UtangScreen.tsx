@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useSukis } from '../hooks/useSukis';
 import { useSukiLedger } from '../hooks/useSukiLedger';
+import { useUtangSummary } from '../hooks/useUtangSummary';
+import { useDateRange } from '../../../hooks/useDateRange';
+import { DateRangeControls } from '../../../components/DateRangeControls';
 import { Pagination } from '../../../components/Pagination';
 import { peso, formatDate } from '../../../lib/format';
 import type { Suki, UtangLedgerEntry } from '../../../types';
@@ -45,6 +48,10 @@ const buildLedgerRows = (entries: UtangLedgerEntry[]): LedgerDisplayRow[] => {
 
 const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
   const { ledger, loading, error, refetch } = useSukiLedger(suki.id);
+  const amountPaid =
+    ledger?.entries
+      .filter((e) => e.type === 'Payment' && !e.isVoided)
+      .reduce((sum, e) => sum + e.amount, 0) ?? 0;
 
   return (
     <>
@@ -68,6 +75,10 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
           <div className="card stat-card">
             <div className="stat-label">Balance</div>
             <div className="stat-value" style={balanceStyle(ledger.balance)}>{peso.format(ledger.balance)}</div>
+          </div>
+          <div className="card stat-card">
+            <div className="stat-label">Amount paid</div>
+            <div className="stat-value">{peso.format(amountPaid)}</div>
           </div>
           <div className="card stat-card">
             <div className="stat-label">Markup earned</div>
@@ -99,7 +110,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
             </p>
           </div>
         ) : (
-          <table className="table">
+          <table className="ledger">
             <thead>
               <tr>
                 <th>Date</th>
@@ -201,6 +212,16 @@ export const UtangScreen = () => {
     totalCount,
     totalPages,
   } = useSukis(term);
+  const {
+    preset,
+    setPreset,
+    customFrom,
+    setCustomFrom,
+    customTo,
+    setCustomTo,
+    range,
+  } = useDateRange('month');
+  const { summary, refetch: refetchSummary } = useUtangSummary(range);
 
   useEffect(() => {
     const handle = setTimeout(() => setTerm(searchInput), 300);
@@ -232,9 +253,49 @@ export const UtangScreen = () => {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
-          <button className="btn btn-ghost" onClick={refetch} disabled={loading}>
+          <button
+            className="btn btn-ghost"
+            onClick={() => {
+              refetch();
+              refetchSummary();
+            }}
+            disabled={loading}
+          >
             Refresh
           </button>
+        </div>
+      </div>
+
+      <DateRangeControls
+        preset={preset}
+        setPreset={setPreset}
+        customFrom={customFrom}
+        setCustomFrom={setCustomFrom}
+        customTo={customTo}
+        setCustomTo={setCustomTo}
+      />
+
+      <div className="stat-row" style={{ marginBottom: 18 }}>
+        <div className="card stat-card">
+          <div className="stat-label">Total utang</div>
+          <div className="stat-value tnum">
+            {peso.format(summary?.totalCharged ?? 0)}
+          </div>
+        </div>
+        <div className="card stat-card">
+          <div className="stat-label">Total amount paid</div>
+          <div className="stat-value tnum">
+            {peso.format(summary?.totalPaid ?? 0)}
+          </div>
+        </div>
+        <div className="card stat-card">
+          <div className="stat-label">Top suki</div>
+          <div className="stat-value">{summary?.topSukiName ?? '—'}</div>
+          {summary?.topSukiName && (
+            <div className="stat-sub">
+              {peso.format(summary.topSukiCharged)} charged
+            </div>
+          )}
         </div>
       </div>
 
@@ -249,7 +310,7 @@ export const UtangScreen = () => {
             </button>
           </div>
         ) : loading ? (
-          <table className="table">
+          <table className="ledger">
             <thead>
               <tr>
                 <th>Suki</th>
@@ -290,7 +351,7 @@ export const UtangScreen = () => {
           </div>
         ) : (
           <>
-            <table className="table">
+            <table className="ledger">
               <thead>
                 <tr>
                   <th>Suki</th>

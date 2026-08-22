@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useProfitReport } from '../hooks/useProfitReport';
-import { useDateRange } from '../hooks/useDateRange';
+import { useDateRange } from '../../../hooks/useDateRange';
 import { useCategories } from '../../items/hooks/useCategories';
 import { useSellableItems } from '../../items/hooks/useSellableItems';
 import { ReportsTabs } from '../components/ReportsTabs';
-import { DateRangeControls } from '../components/DateRangeControls';
+import { DateRangeControls } from '../../../components/DateRangeControls';
 import { Pagination } from '../../../components/Pagination';
 import { SearchSelect } from '../../../components/SearchSelect';
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination';

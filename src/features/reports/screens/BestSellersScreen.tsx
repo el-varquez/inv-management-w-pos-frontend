@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useBestSellers } from '../hooks/useBestSellers';
-import { useDateRange } from '../hooks/useDateRange';
+import { useDateRange } from '../../../hooks/useDateRange';
 import { ReportsTabs } from '../components/ReportsTabs';
-import { DateRangeControls } from '../components/DateRangeControls';
+import { DateRangeControls } from '../../../components/DateRangeControls';
 import { Pagination } from '../../../components/Pagination';
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination';
 import { peso } from '../../../lib/format';

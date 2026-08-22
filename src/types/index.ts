@@ -365,3 +365,10 @@ export interface SukiLedger {
   markupEarned: number;
   entries: UtangLedgerEntry[];
 }
+
+export interface UtangSummary {
+  totalCharged: number;
+  totalPaid: number;
+  topSukiName: string | null;
+  topSukiCharged: number;
+}

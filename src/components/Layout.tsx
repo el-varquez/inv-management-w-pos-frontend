@@ -38,6 +38,15 @@ const ReportsIcon = () => (
   </svg>
 );
 
+const UtangIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M6 3h13v18H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+    <path d="M9 3v18" />
+    <path d="M13 8h3" />
+    <path d="M13 12h3" />
+  </svg>
+);
+
 const CashiersIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="9" cy="8" r="3.4" />
@@ -108,6 +117,13 @@ export const Layout = () => {
             <span className="nav-label">Reports</span>
             <span className="nav-tiny">Reports</span>
           </NavLink>
+          {isAdmin && (
+            <NavLink to="/utang" className={navLinkClass}>
+              <UtangIcon />
+              <span className="nav-label">Utang</span>
+              <span className="nav-tiny">Utang</span>
+            </NavLink>
+          )}
           {isAdmin && (
             <NavLink to="/cashiers" className={navLinkClass}>
               <CashiersIcon />

@@ -285,16 +285,18 @@ export const DashboardScreen = () => {
                   />
                   <div className="dash-foot">
                     <span>Bars scaled to the largest balance.</span>
+                    <Link className="dash-link" to="/utang">Open utang →</Link>
                   </div>
                 </>
               ) : (
                 <>
                   <div className="dash-empty">
-                    No utang recorded yet — the register starts selling on credit in the
-                    desktop phase.
+                    No utang recorded yet — sales charged to a suki at the register land
+                    here.
                   </div>
                   <div className="dash-foot">
-                    <span>Utang report lands under Reports after the dashboard.</span>
+                    <span>Balances and ledgers live in Utang.</span>
+                    <Link className="dash-link" to="/utang">Open utang →</Link>
                   </div>
                 </>
               )}

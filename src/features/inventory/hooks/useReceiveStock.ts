@@ -3,7 +3,8 @@ import { inventoryService } from '../services/inventoryService';
 import { getApiErrorMessage } from '../../../services/apiError';
 
 export interface ReceiveLinePayload {
-  itemId: string;
+  itemId?: string;
+  newItem?: { name: string; barcode?: string };
   quantity: number;
   costPerUnit: number;
   sellingPrice: number;

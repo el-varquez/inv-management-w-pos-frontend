@@ -6,6 +6,10 @@ import { getApiErrorMessage } from '../../../services/apiError';
 import { peso } from '../../../lib/format';
 import { useSettings } from '../../../hooks/useSettings';
 import { resolveUtangPrice } from '../../../lib/utangPricing';
+import {
+  isInventoryItemCategory,
+  isServiceCategory,
+} from '../../../lib/categories';
 import type { Category, Item } from '../../../types';
 
 interface Props {
@@ -47,9 +51,13 @@ export const ItemFormModal = ({
   const [lowStockThreshold, setLowStockThreshold] = useState(
     item ? String(item.lowStockThreshold) : '0'
   );
-  const [tracksStock, setTracksStock] = useState(item?.tracksStock ?? true);
   const [categoryId, setCategoryId] = useState(item?.categoryId ?? '');
   const [isActive, setIsActive] = useState(item?.isActive ?? true);
+
+  const inventoryItemId = categories.find(isInventoryItemCategory)?.id ?? '';
+  const selectedCategoryId = categoryId || (isEdit ? '' : inventoryItemId);
+  const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
+  const isService = selectedCategory ? isServiceCategory(selectedCategory) : false;
 
   const [addingCategory, setAddingCategory] = useState(categories.length === 0);
   const [newCategory, setNewCategory] = useState('');
@@ -64,7 +72,7 @@ export const ItemFormModal = ({
   const utangPrice = resolveUtangPrice(price > 0 ? price : 0, markupValue, defaultMarkup);
 
   const canSubmit =
-    name.trim().length > 0 && price > 0 && cost >= 0 && categoryId !== '';
+    name.trim().length > 0 && price > 0 && cost >= 0 && selectedCategoryId !== '';
 
   const handleAddCategory = async () => {
     const trimmed = newCategory.trim();
@@ -96,8 +104,7 @@ export const ItemFormModal = ({
       sellingPrice: price,
       utangMarkup: markupValue,
       lowStockThreshold: parseInt(lowStockThreshold, 10) || 0,
-      tracksStock,
-      categoryId,
+      categoryId: selectedCategoryId,
     };
 
     const ok = item
@@ -231,7 +238,7 @@ export const ItemFormModal = ({
             {!addingCategory && (
               <SearchSelect
                 id="category"
-                value={categoryId}
+                value={selectedCategoryId}
                 onChange={setCategoryId}
                 options={categories.map((c) => ({
                   value: c.id,
@@ -287,18 +294,12 @@ export const ItemFormModal = ({
           </div>
 
           <div className="field">
-            <div className="field-label-row">
-              <label htmlFor="threshold">Low-stock threshold</label>
-              <label className="check-inline">
-                <input
-                  type="checkbox"
-                  checked={!tracksStock}
-                  onChange={(e) => setTracksStock(!e.target.checked)}
-                />
-                N/A
-              </label>
-            </div>
-            {tracksStock ? (
+            <label htmlFor="threshold">Low-stock threshold</label>
+            {isService ? (
+              <p className="field-hint">
+                Not a physical item — no stock is tracked and no low-stock alerts are sent.
+              </p>
+            ) : (
               <input
                 id="threshold"
                 className="input"
@@ -309,10 +310,6 @@ export const ItemFormModal = ({
                 value={lowStockThreshold}
                 onChange={(e) => setLowStockThreshold(e.target.value)}
               />
-            ) : (
-              <p className="field-hint">
-                Not a physical item — no stock is tracked and no low-stock alerts are sent.
-              </p>
             )}
           </div>
         </div>

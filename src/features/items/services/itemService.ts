@@ -11,6 +11,7 @@ export type CreateItemPayload = Omit<
   | 'isComposite'
   | 'categoryName'
   | 'createdAt'
+  | 'tracksStock'
 > & { itemCode?: string };
 
 export type UpdateItemPayload = CreateItemPayload & { isActive: boolean };

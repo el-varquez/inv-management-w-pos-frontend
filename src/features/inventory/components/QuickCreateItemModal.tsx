@@ -4,6 +4,10 @@ import { SearchSelect } from '../../../components/SearchSelect';
 import { useCategories } from '../../items/hooks/useCategories';
 import { itemService } from '../../items/services/itemService';
 import { getApiErrorMessage } from '../../../services/apiError';
+import {
+  isInventoryItemCategory,
+  isServiceCategory,
+} from '../../../lib/categories';
 import type { SearchItem } from '../../../types';
 
 interface Props {
@@ -27,10 +31,14 @@ export const QuickCreateItemModal = ({ scannedCode, onClose, onCreated }: Props)
   const [catSaving, setCatSaving] = useState(false);
   const [catError, setCatError] = useState<string | null>(null);
 
+  const inventoryItemId = categories.find(isInventoryItemCategory)?.id ?? '';
+  const selectedCategoryId = categoryId || inventoryItemId;
+  const pickable = categories.filter((c) => !isServiceCategory(c));
+
   const cost = Number(costPrice);
   const price = Number(sellingPrice);
   const canSubmit =
-    name.trim().length > 0 && price > 0 && cost >= 0 && categoryId !== '';
+    name.trim().length > 0 && price > 0 && cost >= 0 && selectedCategoryId !== '';
 
   const handleAddCategory = async () => {
     const trimmed = newCategory.trim();
@@ -62,8 +70,7 @@ export const QuickCreateItemModal = ({ scannedCode, onClose, onCreated }: Props)
         sellingPrice: price,
         utangMarkup: null,
         lowStockThreshold: 5,
-        tracksStock: true,
-        categoryId,
+        categoryId: selectedCategoryId,
       });
 
       const saved = await itemService
@@ -84,7 +91,7 @@ export const QuickCreateItemModal = ({ scannedCode, onClose, onCreated }: Props)
           isComposite: false,
           tracksStock: true,
           categoryName:
-            categories.find((c) => c.id === categoryId)?.name ?? '',
+            categories.find((c) => c.id === selectedCategoryId)?.name ?? '',
         }
       );
     } catch (err) {
@@ -168,9 +175,9 @@ export const QuickCreateItemModal = ({ scannedCode, onClose, onCreated }: Props)
           {!addingCategory && (
             <SearchSelect
               id="qc-category"
-              value={categoryId}
+              value={selectedCategoryId}
               onChange={setCategoryId}
-              options={categories.map((c) => ({ value: c.id, label: c.name }))}
+              options={pickable.map((c) => ({ value: c.id, label: c.name }))}
               placeholder="Select a category…"
               actionLabel="+ New category…"
               onAction={() => setAddingCategory(true)}

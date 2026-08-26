@@ -108,7 +108,14 @@ export const CategoriesScreen = () => {
             {categories.map((c) => (
               <tr key={c.id}>
                 <td>
-                  <div className="item-name">{c.name}</div>
+                  <div className="item-name">
+                    {c.name}
+                    {c.isSystem && (
+                      <span className="cat-pill" style={{ marginLeft: 8 }}>
+                        System
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="item-sub">{c.description ?? '—'}</td>
                 <td className="num tnum">
@@ -116,20 +123,22 @@ export const CategoriesScreen = () => {
                 </td>
                 {isAdmin && (
                   <td className="num">
-                    <div className="row-actions">
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => setModal({ kind: 'edit', category: c })}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn btn-quiet btn-sm"
-                        onClick={() => setModal({ kind: 'delete', category: c })}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    {!c.isSystem && (
+                      <div className="row-actions">
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => setModal({ kind: 'edit', category: c })}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn btn-quiet btn-sm"
+                          onClick={() => setModal({ kind: 'delete', category: c })}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </td>
                 )}
               </tr>

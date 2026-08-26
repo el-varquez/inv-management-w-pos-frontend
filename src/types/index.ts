@@ -53,6 +53,7 @@ export interface Category {
   name: string;
   description?: string;
   itemCount: number;
+  isSystem: boolean;
 }
 
 export interface LoginResult {

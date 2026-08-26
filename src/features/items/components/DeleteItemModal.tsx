@@ -30,8 +30,9 @@ export const DeleteItemModal = ({ item, onClose, onDeleted }: Props) => {
       )}
 
       <p className="state-msg" style={{ margin: '0 0 8px' }}>
-        This removes <strong>{item.name}</strong> from your catalog. Past sales
-        that reference it are unaffected. This can’t be undone.
+        This permanently removes <strong>{item.name}</strong> from your catalog.
+        Items with sales or count history can’t be deleted — deactivate them
+        instead. This can’t be undone.
       </p>
 
       <div className="modal-actions">

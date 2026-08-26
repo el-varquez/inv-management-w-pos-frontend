@@ -30,7 +30,8 @@ export const inventoryService = {
     supplierName?: string;
     notes?: string;
     lines: {
-      itemId: string;
+      itemId?: string;
+      newItem?: { name: string; barcode?: string };
       quantity: number;
       costPerUnit: number;
       sellingPrice: number;

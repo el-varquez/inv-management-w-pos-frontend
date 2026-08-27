@@ -8,6 +8,7 @@ interface DateRangeControlsProps {
   customTo: string;
   setCustomTo: (v: string) => void;
   leading?: React.ReactNode;
+  trailing?: React.ReactNode;
 }
 
 const PRESETS: { value: RangePreset; label: string }[] = [
@@ -25,6 +26,7 @@ export const DateRangeControls = ({
   customTo,
   setCustomTo,
   leading,
+  trailing,
 }: DateRangeControlsProps) => (
   <div className="filter-bar card">
     {leading}
@@ -68,5 +70,7 @@ export const DateRangeControls = ({
         </div>
       </>
     )}
+
+    {trailing && <div className="filter-bar-trailing">{trailing}</div>}
   </div>
 );

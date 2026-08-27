@@ -25,4 +25,40 @@ export const utangService = {
     });
     return data;
   },
+
+  createSuki: async (body: { name: string; phone?: string }): Promise<Suki> => {
+    const { data } = await api.post<Suki>('/utang/sukis', body);
+    return data;
+  },
+
+  updateSuki: async (
+    id: string,
+    body: { name: string; phone?: string },
+  ): Promise<void> => {
+    await api.put(`/utang/sukis/${id}`, body);
+  },
+
+  deleteSuki: async (id: string): Promise<void> => {
+    await api.delete(`/utang/sukis/${id}`);
+  },
+
+  collect: async (body: {
+    sukiId: string;
+    amount: number;
+    note?: string;
+  }): Promise<void> => {
+    await api.post('/utang/collect', body);
+  },
+
+  createAdjustment: async (body: {
+    sukiId: string;
+    amount: number;
+    note: string;
+  }): Promise<void> => {
+    await api.post('/utang/adjustments', body);
+  },
+
+  voidAdjustment: async (id: string): Promise<void> => {
+    await api.post(`/utang/adjustments/${id}/void`);
+  },
 };

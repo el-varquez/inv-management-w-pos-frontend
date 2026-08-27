@@ -347,7 +347,7 @@ export interface Suki {
 
 export interface UtangLedgerEntry {
   id: string;
-  type: 'Charge' | 'Payment';
+  type: 'Charge' | 'Payment' | 'Adjustment';
   amount: number;
   markup: number;
   transactionId: string | null;

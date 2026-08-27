@@ -807,6 +807,9 @@ select.input {
 .filter-bar .field {
   margin-bottom: 0;
 }
+.filter-bar-trailing {
+  margin-left: auto;
+}
 .filter-clear {
   margin-bottom: 2px;
 }

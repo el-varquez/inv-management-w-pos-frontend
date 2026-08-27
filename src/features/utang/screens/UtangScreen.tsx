@@ -6,6 +6,12 @@ import { useDateRange } from '../../../hooks/useDateRange';
 import { DateRangeControls } from '../../../components/DateRangeControls';
 import { Pagination } from '../../../components/Pagination';
 import { peso, formatDate } from '../../../lib/format';
+import { SukiFormModal } from '../components/SukiFormModal';
+import { CollectModal } from '../components/CollectModal';
+import { AdjustmentModal } from '../components/AdjustmentModal';
+import { DeleteSukiModal } from '../components/DeleteSukiModal';
+import { VoidAdjustmentModal } from '../components/VoidAdjustmentModal';
+import { useIsAdmin } from '../../../store/authStore';
 import type { Suki, UtangLedgerEntry } from '../../../types';
 
 const SKELETON_ROWS = Array.from({ length: 5 });
@@ -26,14 +32,16 @@ const buildLedgerRows = (entries: UtangLedgerEntry[]): LedgerDisplayRow[] => {
   let running = 0;
   return entries.map((entry) => {
     if (!entry.isVoided) {
-      running += entry.type === 'Charge' ? entry.amount : -entry.amount;
+      running += entry.type === 'Payment' ? -entry.amount : entry.amount;
     }
     const label =
       entry.type === 'Charge'
         ? `Charge · ${entry.receiptNumber ?? ''}`
-        : entry.transactionId
-          ? `${entry.note ?? 'Down payment'} · ${entry.receiptNumber ?? ''}`
-          : (entry.note ?? 'Payment received');
+        : entry.type === 'Adjustment'
+          ? `Adjustment · ${entry.note ?? ''}`
+          : entry.transactionId
+            ? `${entry.note ?? 'Down payment'} · ${entry.receiptNumber ?? ''}`
+            : (entry.note ?? 'Payment received');
     return {
       entry,
       label,
@@ -48,6 +56,21 @@ const buildLedgerRows = (entries: UtangLedgerEntry[]): LedgerDisplayRow[] => {
 
 const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
   const { ledger, loading, error, refetch } = useSukiLedger(suki.id);
+  const [collecting, setCollecting] = useState(false);
+  const [adjusting, setAdjusting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [voiding, setVoiding] = useState<UtangLedgerEntry | null>(null);
+  const isAdmin = useIsAdmin();
+  const current: Suki = ledger
+    ? {
+        id: ledger.id,
+        name: ledger.name,
+        phone: ledger.phone,
+        balance: ledger.balance,
+      }
+    : suki;
+
   const amountPaid =
     ledger?.entries
       .filter((e) => e.type === 'Payment' && !e.isVoided)
@@ -58,12 +81,31 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
       <div className="page-head">
         <div>
           <p className="eyebrow">Utang · Ledger</p>
-          <h1 className="page-title">{suki.name}</h1>
+          <h1 className="page-title">{current.name}</h1>
           <p className="page-lead">
-            {suki.phone ?? 'No phone on file'}
+            {current.phone ?? 'No phone on file'}
           </p>
         </div>
         <div className="page-actions">
+          <button className="btn btn-primary" onClick={() => setCollecting(true)}>
+            Collect
+          </button>
+          {isAdmin && (
+            <>
+              <button className="btn btn-ghost" onClick={() => setAdjusting(true)}>
+                Adjust
+              </button>
+              <button className="btn btn-ghost" onClick={() => setEditing(true)}>
+                Edit
+              </button>
+              <button
+                className="btn btn-danger"
+                onClick={() => setDeleting(true)}
+              >
+                Delete
+              </button>
+            </>
+          )}
           <button className="btn btn-ghost" onClick={onBack}>
             ← All sukis
           </button>
@@ -118,6 +160,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
                 <th className="num">Charge</th>
                 <th className="num">Payment</th>
                 <th className="num">Balance</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -169,7 +212,8 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
                         : undefined
                     }
                   >
-                    {row.entry.type === 'Charge'
+                    {row.entry.type === 'Charge' ||
+                    (row.entry.type === 'Adjustment' && row.entry.amount > 0)
                       ? peso.format(row.entry.amount)
                       : ''}
                   </td>
@@ -184,15 +228,88 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
                   >
                     {row.entry.type === 'Payment'
                       ? peso.format(row.entry.amount)
-                      : ''}
+                      : row.entry.type === 'Adjustment' && row.entry.amount < 0
+                        ? peso.format(-row.entry.amount)
+                        : ''}
                   </td>
                   <td className="num">{row.running}</td>
+                  <td className="num">
+                    {isAdmin &&
+                      row.entry.type === 'Adjustment' &&
+                      !row.entry.isVoided && (
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => setVoiding(row.entry)}
+                        >
+                          Void
+                        </button>
+                      )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+
+      {deleting && (
+        <DeleteSukiModal
+          suki={current}
+          hasEntries={(ledger?.entries.length ?? 0) > 0}
+          onClose={() => setDeleting(false)}
+          onDeleted={() => {
+            setDeleting(false);
+            onBack();
+          }}
+        />
+      )}
+
+      {voiding && ledger && (
+        <VoidAdjustmentModal
+          entry={voiding}
+          balance={ledger.balance}
+          onClose={() => setVoiding(null)}
+          onVoided={() => {
+            setVoiding(null);
+            refetch();
+          }}
+        />
+      )}
+
+      {editing && (
+        <SukiFormModal
+          suki={current}
+          onClose={() => setEditing(false)}
+          onSaved={() => {
+            setEditing(false);
+            refetch();
+          }}
+        />
+      )}
+
+      {collecting && ledger && (
+        <CollectModal
+          suki={current}
+          balance={ledger.balance}
+          onClose={() => setCollecting(false)}
+          onSaved={() => {
+            setCollecting(false);
+            refetch();
+          }}
+        />
+      )}
+
+      {adjusting && ledger && (
+        <AdjustmentModal
+          suki={current}
+          balance={ledger.balance}
+          onClose={() => setAdjusting(false)}
+          onSaved={() => {
+            setAdjusting(false);
+            refetch();
+          }}
+        />
+      )}
     </>
   );
 };
@@ -201,6 +318,7 @@ export const UtangScreen = () => {
   const [searchInput, setSearchInput] = useState('');
   const [term, setTerm] = useState('');
   const [selected, setSelected] = useState<Suki | null>(null);
+  const [addingSuki, setAddingSuki] = useState(false);
   const {
     sukis,
     loading,
@@ -229,7 +347,16 @@ export const UtangScreen = () => {
   }, [searchInput]);
 
   if (selected) {
-    return <LedgerView suki={selected} onBack={() => setSelected(null)} />;
+    return (
+      <LedgerView
+        suki={selected}
+        onBack={() => {
+          setSelected(null);
+          refetch();
+          refetchSummary();
+        }}
+      />
+    );
   }
 
   return (
@@ -243,7 +370,7 @@ export const UtangScreen = () => {
               ? 'Loading sukis…'
               : error
                 ? 'Could not load sukis.'
-                : `${totalCount} suki${totalCount === 1 ? '' : 's'} — read-only; charges and collections happen at the register`}
+                : `${totalCount} suki${totalCount === 1 ? '' : 's'}`}
           </p>
         </div>
         <div className="page-actions">
@@ -273,6 +400,11 @@ export const UtangScreen = () => {
         setCustomFrom={setCustomFrom}
         customTo={customTo}
         setCustomTo={setCustomTo}
+        trailing={
+          <button className="btn btn-primary" onClick={() => setAddingSuki(true)}>
+            + New suki
+          </button>
+        }
       />
 
       <div className="stat-row" style={{ marginBottom: 18 }}>
@@ -346,7 +478,7 @@ export const UtangScreen = () => {
             <p className="state-msg">
               {term
                 ? 'Try a different name or phone number.'
-                : 'Sukis are added at the register when the first utang is charged.'}
+                : 'Add your first suki to start a ledger.'}
             </p>
           </div>
         ) : (
@@ -381,6 +513,16 @@ export const UtangScreen = () => {
           </>
         )}
       </div>
+
+      {addingSuki && (
+        <SukiFormModal
+          onClose={() => setAddingSuki(false)}
+          onSaved={() => {
+            setAddingSuki(false);
+            refetch();
+          }}
+        />
+      )}
     </>
   );
 };

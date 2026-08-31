@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useSettings } from '../../../hooks/useSettings';
 import { ChangePasswordModal } from '../components/ChangePasswordModal';
 import { EWalletRow } from '../components/EWalletRow';
+import { PaymentMethodsSection } from '../components/PaymentMethodsSection';
 import { UndoZReadSection } from '../components/UndoZReadSection';
 import { UtangMarkupRow } from '../components/UtangMarkupRow';
 
@@ -13,7 +14,6 @@ export const SettingsScreen = () => {
     error,
     saving,
     saveError,
-    setAcceptUtang,
     setDefaultUtangMarkup,
     setEWalletFloat,
   } = useSettings();
@@ -24,8 +24,6 @@ export const SettingsScreen = () => {
   const revealBypass = Boolean(
     (useLocation().state as { revealBypass?: boolean } | null)?.revealBypass
   );
-
-  const accept = settings?.acceptUtang ?? false;
 
   return (
     <>
@@ -59,36 +57,13 @@ export const SettingsScreen = () => {
               </div>
             )}
 
-            <div className="setting-row">
-              <div className="setting-copy">
-                <div className="setting-name" id="accept-utang-label">
-                  Accept utang
-                </div>
-                <p className="setting-desc">
-                  When off, the register takes no new charges — collections are
-                  still allowed.
-                </p>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={accept}
-                aria-labelledby="accept-utang-label"
-                className={`switch${accept ? ' switch-on' : ''}`}
-                disabled={loading || saving || !settings}
-                onClick={() => setAcceptUtang(!accept)}
-              >
-                <span className="switch-knob" />
-              </button>
-            </div>
+            <UtangMarkupRow
+              value={settings ? settings.defaultUtangMarkup : null}
+              disabled={loading || saving || !settings}
+              onSave={setDefaultUtangMarkup}
+            />
 
-            {accept && (
-              <UtangMarkupRow
-                value={settings ? settings.defaultUtangMarkup : null}
-                disabled={loading || saving || !settings}
-                onSave={setDefaultUtangMarkup}
-              />
-            )}
+            <PaymentMethodsSection />
 
             <EWalletRow
               trackEWalletFloat={settings?.trackEWalletFloat ?? false}

@@ -82,10 +82,20 @@ export interface StoreSettings {
   storeName: string;
   address: string;
   receiptFooter: string;
-  acceptUtang: boolean;
   defaultUtangMarkup: number;
   trackEWalletFloat: boolean;
   eWalletFeeItemId: string | null;
+}
+
+export type PaymentMethodType = 'Sales' | 'Invoice';
+
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  type: PaymentMethodType;
+  requiresReference: boolean;
+  isActive: boolean;
+  isSystem: boolean;
 }
 
 export interface DaySummary {

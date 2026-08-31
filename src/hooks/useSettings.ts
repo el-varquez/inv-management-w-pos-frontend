@@ -30,22 +30,6 @@ export const useSettings = () => {
     };
   }, []);
 
-  const setAcceptUtang = async (acceptUtang: boolean) => {
-    if (!settings) return;
-
-    setSaving(true);
-    setSaveError(null);
-    try {
-      const next = { ...settings, acceptUtang };
-      await settingsService.update(next);
-      setSettings(next);
-    } catch (err) {
-      setSaveError(getApiErrorMessage(err, 'Failed to save settings.'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const setDefaultUtangMarkup = async (
     defaultUtangMarkup: number
   ): Promise<boolean> => {
@@ -93,7 +77,6 @@ export const useSettings = () => {
     error,
     saving,
     saveError,
-    setAcceptUtang,
     setDefaultUtangMarkup,
     setEWalletFloat,
   };

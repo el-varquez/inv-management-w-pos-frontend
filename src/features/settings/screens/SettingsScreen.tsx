@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSettings } from '../../../hooks/useSettings';
 import { ChangePasswordModal } from '../components/ChangePasswordModal';
-import { EWalletRow } from '../components/EWalletRow';
 import { PaymentMethodsSection } from '../components/PaymentMethodsSection';
 import { UndoZReadSection } from '../components/UndoZReadSection';
 import { UtangMarkupRow } from '../components/UtangMarkupRow';
@@ -15,7 +14,6 @@ export const SettingsScreen = () => {
     saving,
     saveError,
     setDefaultUtangMarkup,
-    setEWalletFloat,
   } = useSettings();
 
   const [changingPassword, setChangingPassword] = useState(false);
@@ -64,13 +62,6 @@ export const SettingsScreen = () => {
             />
 
             <PaymentMethodsSection />
-
-            <EWalletRow
-              trackEWalletFloat={settings?.trackEWalletFloat ?? false}
-              eWalletFeeItemId={settings?.eWalletFeeItemId ?? null}
-              disabled={loading || saving || !settings}
-              onSave={setEWalletFloat}
-            />
 
             <div className="setting-row">
               <div className="setting-copy">

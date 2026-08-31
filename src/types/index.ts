@@ -83,8 +83,6 @@ export interface StoreSettings {
   address: string;
   receiptFooter: string;
   defaultUtangMarkup: number;
-  trackEWalletFloat: boolean;
-  eWalletFeeItemId: string | null;
 }
 
 export type PaymentMethodType = 'Sales' | 'Invoice';

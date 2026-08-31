@@ -50,27 +50,6 @@ export const useSettings = () => {
     }
   };
 
-  const setEWalletFloat = async (
-    trackEWalletFloat: boolean,
-    eWalletFeeItemId: string | null
-  ): Promise<boolean> => {
-    if (!settings) return false;
-
-    setSaving(true);
-    setSaveError(null);
-    try {
-      const next = { ...settings, trackEWalletFloat, eWalletFeeItemId };
-      await settingsService.update(next);
-      setSettings(next);
-      return true;
-    } catch (err) {
-      setSaveError(getApiErrorMessage(err, 'Failed to save settings.'));
-      return false;
-    } finally {
-      setSaving(false);
-    }
-  };
-
   return {
     settings,
     loading,
@@ -78,6 +57,5 @@ export const useSettings = () => {
     saving,
     saveError,
     setDefaultUtangMarkup,
-    setEWalletFloat,
   };
 };

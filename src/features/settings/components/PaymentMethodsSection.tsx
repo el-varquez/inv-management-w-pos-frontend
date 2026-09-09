@@ -34,13 +34,6 @@ export const PaymentMethodsSection = () => {
     });
   };
 
-  const inactiveInvoice = methods
-    .filter((m) => m.type === 'Invoice' && !m.isActive)
-    .map((m) => m.name);
-  const noActiveInvoice = !methods.some(
-    (m) => m.type === 'Invoice' && m.isActive
-  );
-
   return (
     <div className="setting-block">
       <div className="setting-block-head">
@@ -78,7 +71,6 @@ export const PaymentMethodsSection = () => {
             <thead>
               <tr>
                 <th>Method</th>
-                <th>Type</th>
                 <th>Reference</th>
                 <th className="mid">Active</th>
                 <th className="right" />
@@ -87,7 +79,7 @@ export const PaymentMethodsSection = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5}>
+                  <td colSpan={4}>
                     <div className="method-sub">Loading payment methods…</div>
                   </td>
                 </tr>
@@ -99,13 +91,6 @@ export const PaymentMethodsSection = () => {
                       <td>
                         <div className="method-name">{m.name}</div>
                         {m.isSystem && <div className="method-sub">System</div>}
-                      </td>
-                      <td>
-                        {m.type === 'Invoice' ? (
-                          <span className="pill pill-gold">Invoice</span>
-                        ) : (
-                          <span className="pill pill-muted">Sales</span>
-                        )}
                       </td>
                       <td>
                         {m.requiresReference ? (
@@ -154,19 +139,10 @@ export const PaymentMethodsSection = () => {
         </div>
       )}
 
-      {inactiveInvoice.length > 0 && noActiveInvoice ? (
-        <p className="method-foot is-gold">
-          {inactiveInvoice.join(', ')} is off — the register takes no new
-          charges. Collections on existing balances continue, and the ledger
-          stays visible until every suki reaches zero.
-        </p>
-      ) : (
-        <p className="method-foot">
-          An <b>Invoice</b> method is charged to a suki’s ledger at utang prices
-          and is never counted as sales. Methods are never deleted — turn one
-          off instead.
-        </p>
-      )}
+      <p className="method-foot">
+        Every method’s sales count toward the shift’s expected cash. Methods are
+        never deleted — turn one off instead.
+      </p>
 
       {modal.open && (
         <PaymentMethodModal

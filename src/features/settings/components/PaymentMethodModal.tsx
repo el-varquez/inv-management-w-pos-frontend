@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal } from '../../../components/Modal';
-import type { PaymentMethod, PaymentMethodType } from '../../../types';
+import type { PaymentMethod } from '../../../types';
 import {
   CASH_METHOD_ID,
   type CreatePaymentMethodPayload,
@@ -28,7 +28,6 @@ export const PaymentMethodModal = ({
   const isCash = method?.id === CASH_METHOD_ID;
 
   const [name, setName] = useState(method?.name ?? '');
-  const [type, setType] = useState<PaymentMethodType>(method?.type ?? 'Sales');
   const [requiresReference, setRequiresReference] = useState(
     method?.requiresReference ?? false
   );
@@ -37,7 +36,10 @@ export const PaymentMethodModal = ({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const ok = adding
-      ? await onCreate({ name: name.trim(), type, requiresReference })
+      ? await onCreate({
+          name: name.trim(),
+          requiresReference,
+        })
       : await onUpdate(method.id, {
           name: name.trim(),
           requiresReference,
@@ -78,62 +80,6 @@ export const PaymentMethodModal = ({
             autoFocus
           />
         </div>
-
-        {adding ? (
-          <>
-            <div className="field">
-              <label>Type</label>
-            </div>
-            <div className="type-choice">
-              <label className={`type-opt${type === 'Sales' ? ' is-selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="method-type"
-                  checked={type === 'Sales'}
-                  onChange={() => setType('Sales')}
-                />
-                <span>
-                  <span className="type-opt-name">Sales</span>
-                  <span className="type-opt-desc">
-                    Money received now. Counts in net sales and the shift’s BY
-                    PAYMENT rows.
-                  </span>
-                </span>
-              </label>
-              <label
-                className={`type-opt${type === 'Invoice' ? ' is-selected' : ''}`}
-              >
-                <input
-                  type="radio"
-                  name="method-type"
-                  checked={type === 'Invoice'}
-                  onChange={() => setType('Invoice')}
-                />
-                <span>
-                  <span className="type-opt-name">Invoice</span>
-                  <span className="type-opt-desc">
-                    Charged to a suki’s ledger at utang prices, with an optional
-                    down payment. Never counted as sales.
-                  </span>
-                </span>
-              </label>
-            </div>
-            <p className="field-hint">
-              Type can’t be changed after the method is created.
-            </p>
-          </>
-        ) : (
-          <>
-            <div className="field">
-              <label>Type</label>
-              <div className="input is-readonly">{method.type}</div>
-            </div>
-            <p className="field-hint">
-              Type is fixed at creation — changing it would reclassify every past
-              sale.
-            </p>
-          </>
-        )}
 
         <div className="modal-row">
           <div className="setting-copy">

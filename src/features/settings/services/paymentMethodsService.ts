@@ -1,11 +1,10 @@
 import api from '../../../services/api';
-import type { PaymentMethod, PaymentMethodType } from '../../../types';
+import type { PaymentMethod } from '../../../types';
 
 export const CASH_METHOD_ID = '00000000-0000-0000-0000-000000000001';
 
 export interface CreatePaymentMethodPayload {
   name: string;
-  type: PaymentMethodType;
   requiresReference: boolean;
 }
 

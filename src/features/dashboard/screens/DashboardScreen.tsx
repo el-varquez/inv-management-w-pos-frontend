@@ -8,10 +8,12 @@ import { SalesTrendChart } from '../components/SalesTrendChart';
 import { RankBarList } from '../components/RankBarList';
 import { StockHealthDonut } from '../components/StockHealthDonut';
 import { peso } from '../../../lib/format';
+import { useSettings } from '../../../hooks/useSettings';
 import type { PopularWindow } from '../hooks/usePopularItems';
 import type { TrendPeriod } from '../../../types';
 
 export const DashboardScreen = () => {
+  const { acceptUtang } = useSettings();
   const { summary, loading, error, refetch } = useDashboardSummary();
   const [trendPeriod, setTrendPeriod] = useState<TrendPeriod>('week');
   const [popularWindow, setPopularWindow] = useState<PopularWindow>('week');
@@ -107,22 +109,24 @@ export const DashboardScreen = () => {
               </div>
             </div>
 
-            <div className="card stat-card">
-              <div className="stat-label">Utang outstanding</div>
-              <div className="stat-value">
-                {summary ? peso.format(summary.utang.totalOutstanding) : '—'}
+            {acceptUtang && (
+              <div className="card stat-card">
+                <div className="stat-label">Utang outstanding</div>
+                <div className="stat-value">
+                  {summary ? peso.format(summary.utang.totalOutstanding) : '—'}
+                </div>
+                <div className="stat-sub">
+                  {summary && summary.utang.sukiCount > 0 ? (
+                    <>
+                      <span className="stat-dot" />
+                      {summary.utang.sukiCount} suki carrying utang
+                    </>
+                  ) : (
+                    'no suki carrying utang'
+                  )}
+                </div>
               </div>
-              <div className="stat-sub">
-                {summary && summary.utang.sukiCount > 0 ? (
-                  <>
-                    <span className="stat-dot" />
-                    {summary.utang.sukiCount} suki carrying utang
-                  </>
-                ) : (
-                  'no suki carrying utang'
-                )}
-              </div>
-            </div>
+            )}
 
             <div className="card stat-card">
               <div className="stat-label">Low stock</div>
@@ -145,7 +149,7 @@ export const DashboardScreen = () => {
             <div className="card dash-span2">
               <div className="dash-head">
                 <div>
-                  <h2 className="dash-title">Sales &amp; utang</h2>
+                  <h2 className="dash-title">{acceptUtang ? 'Sales & utang' : 'Sales'}</h2>
                   <div className="dash-sub">
                     {trendError ? (
                       '—'
@@ -249,58 +253,60 @@ export const DashboardScreen = () => {
                 <Link className="dash-link" to="/inventory/stock-levels">Stock levels →</Link>
               </div>
             </div>
-            <div className="card dash-span2">
-              <div className="dash-head">
-                <div>
-                  <h2 className="dash-title">Top utang</h2>
-                  <div className="dash-sub">
-                    {summary && summary.utang.sukiCount > 0 ? (
-                      <>
-                        <b>{peso.format(summary.utang.totalOutstanding)}</b> outstanding
-                        across <b>{summary.utang.sukiCount} suki</b> ·{' '}
-                        <span className="good">
-                          {peso.format(summary.utang.collectedThisWeek)} collected
-                        </span>{' '}
-                        this week
-                      </>
-                    ) : (
-                      'customer credit, largest balance first'
-                    )}
+            {acceptUtang && (
+              <div className="card dash-span2">
+                <div className="dash-head">
+                  <div>
+                    <h2 className="dash-title">Top utang</h2>
+                    <div className="dash-sub">
+                      {summary && summary.utang.sukiCount > 0 ? (
+                        <>
+                          <b>{peso.format(summary.utang.totalOutstanding)}</b> outstanding
+                          across <b>{summary.utang.sukiCount} suki</b> ·{' '}
+                          <span className="good">
+                            {peso.format(summary.utang.collectedThisWeek)} collected
+                          </span>{' '}
+                          this week
+                        </>
+                      ) : (
+                        'customer credit, largest balance first'
+                      )}
+                    </div>
                   </div>
                 </div>
+                {summary && summary.utang.top.length > 0 ? (
+                  <>
+                    <RankBarList
+                      fill="gold"
+                      money
+                      ranked
+                      rows={summary.utang.top.map((u) => ({
+                        key: u.sukiId,
+                        label: u.name,
+                        value: peso.format(u.balance),
+                        pct: (u.balance / summary.utang.top[0].balance) * 100,
+                        meta: `${Math.round((u.balance / summary.utang.totalOutstanding) * 100)}% of total · ${u.chargeCount} charge${u.chargeCount === 1 ? '' : 's'} · oldest ${u.oldestDays} day${u.oldestDays === 1 ? '' : 's'}`,
+                      }))}
+                    />
+                    <div className="dash-foot">
+                      <span>Bars scaled to the largest balance.</span>
+                      <Link className="dash-link" to="/utang">Open utang →</Link>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="dash-empty">
+                      No utang recorded yet — sales charged to a suki at the register land
+                      here.
+                    </div>
+                    <div className="dash-foot">
+                      <span>Balances and ledgers live in Utang.</span>
+                      <Link className="dash-link" to="/utang">Open utang →</Link>
+                    </div>
+                  </>
+                )}
               </div>
-              {summary && summary.utang.top.length > 0 ? (
-                <>
-                  <RankBarList
-                    fill="gold"
-                    money
-                    ranked
-                    rows={summary.utang.top.map((u) => ({
-                      key: u.sukiId,
-                      label: u.name,
-                      value: peso.format(u.balance),
-                      pct: (u.balance / summary.utang.top[0].balance) * 100,
-                      meta: `${Math.round((u.balance / summary.utang.totalOutstanding) * 100)}% of total · ${u.chargeCount} charge${u.chargeCount === 1 ? '' : 's'} · oldest ${u.oldestDays} day${u.oldestDays === 1 ? '' : 's'}`,
-                    }))}
-                  />
-                  <div className="dash-foot">
-                    <span>Bars scaled to the largest balance.</span>
-                    <Link className="dash-link" to="/utang">Open utang →</Link>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="dash-empty">
-                    No utang recorded yet — sales charged to a suki at the register land
-                    here.
-                  </div>
-                  <div className="dash-foot">
-                    <span>Balances and ledgers live in Utang.</span>
-                    <Link className="dash-link" to="/utang">Open utang →</Link>
-                  </div>
-                </>
-              )}
-            </div>
+            )}
             <div className="card">
               <div className="dash-head">
                 <div>

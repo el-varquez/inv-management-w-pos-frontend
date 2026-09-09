@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useSukis } from '../hooks/useSukis';
 import { useSukiLedger } from '../hooks/useSukiLedger';
 import { useUtangSummary } from '../hooks/useUtangSummary';
 import { useDateRange } from '../../../hooks/useDateRange';
+import { useSettings } from '../../../hooks/useSettings';
 import { DateRangeControls } from '../../../components/DateRangeControls';
 import { Pagination } from '../../../components/Pagination';
 import { peso, formatDate } from '../../../lib/format';
 import { SukiFormModal } from '../components/SukiFormModal';
 import { CollectModal } from '../components/CollectModal';
-import { AdjustmentModal } from '../components/AdjustmentModal';
 import { DeleteSukiModal } from '../components/DeleteSukiModal';
-import { VoidAdjustmentModal } from '../components/VoidAdjustmentModal';
+import { VoidEntryModal } from '../components/VoidEntryModal';
+import { EditPaymentModal } from '../components/EditPaymentModal';
 import { useIsAdmin } from '../../../store/authStore';
 import type { Suki, UtangLedgerEntry } from '../../../types';
 
@@ -36,12 +38,8 @@ const buildLedgerRows = (entries: UtangLedgerEntry[]): LedgerDisplayRow[] => {
     }
     const label =
       entry.type === 'Charge'
-        ? `Charge · ${entry.receiptNumber ?? ''}`
-        : entry.type === 'Adjustment'
-          ? `Adjustment · ${entry.note ?? ''}`
-          : entry.transactionId
-            ? `${entry.note ?? 'Down payment'} · ${entry.receiptNumber ?? ''}`
-            : (entry.note ?? 'Payment received');
+        ? `Charge · ${entry.invoiceNumber ?? ''}`
+        : (entry.note ?? 'Payment received');
     return {
       entry,
       label,
@@ -57,10 +55,12 @@ const buildLedgerRows = (entries: UtangLedgerEntry[]): LedgerDisplayRow[] => {
 const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
   const { ledger, loading, error, refetch } = useSukiLedger(suki.id);
   const [collecting, setCollecting] = useState(false);
-  const [adjusting, setAdjusting] = useState(false);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [voiding, setVoiding] = useState<UtangLedgerEntry | null>(null);
+  const [voidingEntry, setVoidingEntry] = useState<UtangLedgerEntry | null>(null);
+  const [editingPayment, setEditingPayment] = useState<UtangLedgerEntry | null>(
+    null
+  );
   const isAdmin = useIsAdmin();
   const current: Suki = ledger
     ? {
@@ -68,6 +68,10 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
         name: ledger.name,
         phone: ledger.phone,
         balance: ledger.balance,
+        debtSince: ledger.debtSince,
+        lastPaidAt: ledger.lastPaidAt,
+        daysSincePayment: ledger.daysSincePayment,
+        paymentOverdue: ledger.paymentOverdue,
       }
     : suki;
 
@@ -92,9 +96,6 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
           </button>
           {isAdmin && (
             <>
-              <button className="btn btn-ghost" onClick={() => setAdjusting(true)}>
-                Adjust
-              </button>
               <button className="btn btn-ghost" onClick={() => setEditing(true)}>
                 Edit
               </button>
@@ -212,8 +213,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
                         : undefined
                     }
                   >
-                    {row.entry.type === 'Charge' ||
-                    (row.entry.type === 'Adjustment' && row.entry.amount > 0)
+                    {row.entry.type === 'Charge'
                       ? peso.format(row.entry.amount)
                       : ''}
                   </td>
@@ -228,22 +228,36 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
                   >
                     {row.entry.type === 'Payment'
                       ? peso.format(row.entry.amount)
-                      : row.entry.type === 'Adjustment' && row.entry.amount < 0
-                        ? peso.format(-row.entry.amount)
-                        : ''}
+                      : ''}
                   </td>
                   <td className="num">{row.running}</td>
-                  <td className="num">
-                    {isAdmin &&
-                      row.entry.type === 'Adjustment' &&
-                      !row.entry.isVoided && (
+                  <td className="right">
+                    {isAdmin && !row.entry.isVoided && (
+                      <>
+                        {row.entry.type === 'Payment' && (
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm"
+                            aria-label="Correct this payment"
+                            onClick={() => setEditingPayment(row.entry)}
+                          >
+                            ✎
+                          </button>
+                        )}
                         <button
+                          type="button"
                           className="btn btn-ghost btn-sm"
-                          onClick={() => setVoiding(row.entry)}
+                          aria-label={
+                            row.entry.type === 'Charge'
+                              ? 'Void this charge'
+                              : 'Void this payment'
+                          }
+                          onClick={() => setVoidingEntry(row.entry)}
                         >
-                          Void
+                          ✕
                         </button>
-                      )}
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -264,13 +278,23 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
         />
       )}
 
-      {voiding && ledger && (
-        <VoidAdjustmentModal
-          entry={voiding}
-          balance={ledger.balance}
-          onClose={() => setVoiding(null)}
-          onVoided={() => {
-            setVoiding(null);
+      {voidingEntry && (
+        <VoidEntryModal
+          entry={voidingEntry}
+          onClose={() => setVoidingEntry(null)}
+          onSaved={() => {
+            setVoidingEntry(null);
+            refetch();
+          }}
+        />
+      )}
+
+      {editingPayment && (
+        <EditPaymentModal
+          entry={editingPayment}
+          onClose={() => setEditingPayment(null)}
+          onSaved={() => {
+            setEditingPayment(null);
             refetch();
           }}
         />
@@ -299,22 +323,12 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
         />
       )}
 
-      {adjusting && ledger && (
-        <AdjustmentModal
-          suki={current}
-          balance={ledger.balance}
-          onClose={() => setAdjusting(false)}
-          onSaved={() => {
-            setAdjusting(false);
-            refetch();
-          }}
-        />
-      )}
     </>
   );
 };
 
 export const UtangScreen = () => {
+  const { acceptUtang, loading: settingsLoading } = useSettings();
   const [searchInput, setSearchInput] = useState('');
   const [term, setTerm] = useState('');
   const [selected, setSelected] = useState<Suki | null>(null);
@@ -345,6 +359,31 @@ export const UtangScreen = () => {
     const handle = setTimeout(() => setTerm(searchInput), 300);
     return () => clearTimeout(handle);
   }, [searchInput]);
+
+  if (settingsLoading) return null;
+
+  if (!acceptUtang) {
+    return (
+      <>
+        <div className="page-head">
+          <div>
+            <p className="eyebrow">Store</p>
+            <h1 className="page-title">Utang</h1>
+          </div>
+        </div>
+        <div className="card">
+          <div className="state">
+            <div className="state-emoji">📒</div>
+            <div className="state-title">Utang is off</div>
+            <p className="state-msg">
+              Turn it on in <Link to="/settings">Settings</Link> to charge sukis
+              and record collections.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (selected) {
     return (

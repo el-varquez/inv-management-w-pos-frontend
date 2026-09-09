@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { settingsService } from '../services/settingsService';
+import {
+  settingsService,
+  type AcceptUtangCredentials,
+} from '../services/settingsService';
 import type { StoreSettings } from '../types';
 import { getApiErrorMessage } from '../services/apiError';
 
@@ -30,16 +33,17 @@ export const useSettings = () => {
     };
   }, []);
 
-  const setDefaultUtangMarkup = async (
-    defaultUtangMarkup: number
-  ): Promise<boolean> => {
-    if (!settings) return false;
-
+  const persist = async (next: StoreSettings): Promise<boolean> => {
     setSaving(true);
     setSaveError(null);
     try {
-      const next = { ...settings, defaultUtangMarkup };
-      await settingsService.update(next);
+      await settingsService.update({
+        storeName: next.storeName,
+        address: next.address,
+        receiptFooter: next.receiptFooter,
+        defaultUtangMarkup: next.defaultUtangMarkup,
+        utangReminderDays: next.utangReminderDays,
+      });
       setSettings(next);
       return true;
     } catch (err) {
@@ -50,12 +54,50 @@ export const useSettings = () => {
     }
   };
 
+  const setDefaultUtangMarkup = async (
+    defaultUtangMarkup: number
+  ): Promise<boolean> => {
+    if (!settings) return false;
+    return persist({ ...settings, defaultUtangMarkup });
+  };
+
+  const setUtangReminderDays = async (
+    utangReminderDays: number
+  ): Promise<boolean> => {
+    if (!settings) return false;
+    return persist({ ...settings, utangReminderDays });
+  };
+
+  const setAcceptUtang = async (
+    accept: boolean,
+    credentials?: AcceptUtangCredentials
+  ): Promise<boolean> => {
+    if (!settings) return false;
+
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await settingsService.setAcceptUtang(accept, credentials);
+      setSettings({ ...settings, acceptUtang: accept });
+      return true;
+    } catch (err) {
+      setSaveError(getApiErrorMessage(err, 'Failed to change the utang setting.'));
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return {
     settings,
+    acceptUtang: settings?.acceptUtang ?? false,
     loading,
     error,
     saving,
     saveError,
+    clearSaveError: () => setSaveError(null),
     setDefaultUtangMarkup,
+    setUtangReminderDays,
+    setAcceptUtang,
   };
 };

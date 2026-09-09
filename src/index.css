@@ -1632,6 +1632,30 @@ table.method-table {
 .setting-control-wide {
   width: 220px;
 }
+.setting-control-utang {
+  width: auto;
+}
+.utang-control-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+.reminder-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.reminder-days {
+  width: 68px;
+  text-align: center;
+  padding-left: 8px;
+  padding-right: 8px;
+}
 .peso-input {
   position: relative;
 }

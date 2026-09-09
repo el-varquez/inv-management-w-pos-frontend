@@ -83,14 +83,13 @@ export interface StoreSettings {
   address: string;
   receiptFooter: string;
   defaultUtangMarkup: number;
+  acceptUtang: boolean;
+  utangReminderDays: number;
 }
-
-export type PaymentMethodType = 'Sales' | 'Invoice';
 
 export interface PaymentMethod {
   id: string;
   name: string;
-  type: PaymentMethodType;
   requiresReference: boolean;
   isActive: boolean;
   isSystem: boolean;
@@ -351,15 +350,19 @@ export interface Suki {
   name: string;
   phone: string | null;
   balance: number;
+  debtSince: string | null;
+  lastPaidAt: string | null;
+  daysSincePayment: number | null;
+  paymentOverdue: boolean;
 }
 
 export interface UtangLedgerEntry {
   id: string;
-  type: 'Charge' | 'Payment' | 'Adjustment';
+  type: 'Charge' | 'Payment';
   amount: number;
   markup: number;
-  transactionId: string | null;
-  receiptNumber: string | null;
+  invoiceId: string | null;
+  invoiceNumber: string | null;
   note: string | null;
   isVoided: boolean;
   editedFrom: number | null;
@@ -372,7 +375,16 @@ export interface SukiLedger {
   phone: string | null;
   balance: number;
   markupEarned: number;
+  debtSince: string | null;
+  lastPaidAt: string | null;
+  daysSincePayment: number | null;
+  paymentOverdue: boolean;
   entries: UtangLedgerEntry[];
+}
+
+export interface UtangOutstanding {
+  totalOwed: number;
+  owingCount: number;
 }
 
 export interface UtangSummary {

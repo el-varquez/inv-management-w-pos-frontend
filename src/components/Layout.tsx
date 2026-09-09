@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useSettings } from '../hooks/useSettings';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { useIsAdmin } from '../store/authStore';
 
@@ -77,6 +78,8 @@ export const Layout = () => {
 
   const isAdmin = useIsAdmin();
 
+  const { acceptUtang } = useSettings();
+
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
@@ -117,7 +120,7 @@ export const Layout = () => {
             <span className="nav-label">Reports</span>
             <span className="nav-tiny">Reports</span>
           </NavLink>
-          {isAdmin && (
+          {isAdmin && acceptUtang && (
             <NavLink to="/utang" className={navLinkClass}>
               <UtangIcon />
               <span className="nav-label">Utang</span>

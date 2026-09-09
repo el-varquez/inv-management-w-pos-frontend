@@ -34,13 +34,13 @@ export const DeleteSukiModal = ({
         {hasEntries ? (
           <>
             <strong>{suki.name}</strong> has ledger history, so they can’t be
-            deleted — the record has to stay. Write the balance off with an
-            adjustment instead.
+            deleted — the record has to stay. Collect or void the balance
+            instead.
           </>
         ) : (
           <>
-            <strong>{suki.name}</strong> has no charges, collections or
-            adjustments, so nothing is lost. This cannot be undone.
+            <strong>{suki.name}</strong> has no charges or collections, so
+            nothing is lost. This cannot be undone.
           </>
         )}
       </p>

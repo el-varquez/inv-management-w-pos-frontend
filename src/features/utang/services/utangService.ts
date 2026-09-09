@@ -50,15 +50,15 @@ export const utangService = {
     await api.post('/utang/collect', body);
   },
 
-  createAdjustment: async (body: {
-    sukiId: string;
-    amount: number;
-    note: string;
-  }): Promise<void> => {
-    await api.post('/utang/adjustments', body);
+  voidPayment: async (id: string): Promise<void> => {
+    await api.post(`/utang/payments/${id}/void`);
   },
 
-  voidAdjustment: async (id: string): Promise<void> => {
-    await api.post(`/utang/adjustments/${id}/void`);
+  editPayment: async (id: string, amount: number): Promise<void> => {
+    await api.put(`/utang/payments/${id}`, { amount });
+  },
+
+  voidInvoice: async (id: string): Promise<void> => {
+    await api.post(`/invoices/${id}/void`);
   },
 };

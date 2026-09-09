@@ -31,15 +31,11 @@ export const useUtangMutations = () => {
       run(() => utangService.deleteSuki(id), 'Failed to delete the suki.'),
     collect: (body: { sukiId: string; amount: number; note?: string }) =>
       run(() => utangService.collect(body), 'Failed to record the collection.'),
-    createAdjustment: (body: { sukiId: string; amount: number; note: string }) =>
-      run(
-        () => utangService.createAdjustment(body),
-        'Failed to save the adjustment.',
-      ),
-    voidAdjustment: (id: string) =>
-      run(
-        () => utangService.voidAdjustment(id),
-        'Failed to void the adjustment.',
-      ),
+    voidPayment: (id: string) =>
+      run(() => utangService.voidPayment(id), 'Failed to void the payment.'),
+    editPayment: (id: string, amount: number) =>
+      run(() => utangService.editPayment(id, amount), 'Failed to save the payment.'),
+    voidInvoice: (id: string) =>
+      run(() => utangService.voidInvoice(id), 'Failed to void the charge.'),
   };
 };

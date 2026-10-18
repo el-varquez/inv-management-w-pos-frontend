@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useProfitReport } from '../hooks/useProfitReport';
 import { useDateRange } from '../../../hooks/useDateRange';
 import { useCategories } from '../../items/hooks/useCategories';
-import { useSellableItems } from '../../items/hooks/useSellableItems';
+import { ItemSearchSelect } from '../../items/components/ItemSearchSelect';
 import { ReportsTabs } from '../components/ReportsTabs';
 import { DateRangeControls } from '../../../components/DateRangeControls';
 import { Pagination } from '../../../components/Pagination';
@@ -21,10 +21,10 @@ export const ProfitReportScreen = () => {
   } = useDateRange('month');
 
   const { categories } = useCategories();
-  const { items } = useSellableItems();
 
   const [categoryId, setCategoryId] = useState('');
   const [itemId, setItemId] = useState('');
+  const [itemName, setItemName] = useState('');
 
   const {
     report,
@@ -39,13 +39,10 @@ export const ProfitReportScreen = () => {
     totalPages,
   } = useProfitReport(range, { categoryId, itemId });
 
-  const itemOptions = categoryId
-    ? items.filter((i) => i.categoryId === categoryId)
-    : items;
-
   const onCategoryChange = (value: string) => {
     setCategoryId(value);
     setItemId('');
+    setItemName('');
   };
 
   const filters = (
@@ -63,11 +60,15 @@ export const ProfitReportScreen = () => {
       </div>
       <div className="field">
         <label htmlFor="filter-item">Item</label>
-        <SearchSelect
+        <ItemSearchSelect
           id="filter-item"
           value={itemId}
-          onChange={setItemId}
-          options={itemOptions.map((i) => ({ value: i.id, label: i.name }))}
+          selectedLabel={itemName}
+          onChange={(id, item) => {
+            setItemId(id);
+            setItemName(item?.name ?? '');
+          }}
+          categoryId={categoryId || undefined}
           allLabel="All items"
           placeholder="Search items…"
         />

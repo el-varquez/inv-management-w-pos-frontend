@@ -6,7 +6,7 @@ import {
   ImportSummaryStrip,
   type ImportReport,
 } from '../components/ImportSummaryStrip';
-import { useItemSearch } from '../hooks/useItemSearch';
+import { useItemSearch } from '../../items/hooks/useItemSearch';
 import { useReceiveStock } from '../hooks/useReceiveStock';
 import { itemService } from '../../items/services/itemService';
 import { getApiErrorMessage } from '../../../services/apiError';

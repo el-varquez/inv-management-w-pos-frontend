@@ -27,14 +27,9 @@ export const itemService = {
     return data;
   },
 
-  getSellable: async (): Promise<Item[]> => {
-    const { data } = await api.get<Item[]>('/items/sellable');
-    return data;
-  },
-
-  search: async (term: string, limit = 10): Promise<SearchItem[]> => {
+  search: async (term: string, limit = 10, categoryId?: string): Promise<SearchItem[]> => {
     const { data } = await api.get<SearchItem[]>('/items/search', {
-      params: { term, limit },
+      params: categoryId ? { term, limit, categoryId } : { term, limit },
     });
     return data;
   },

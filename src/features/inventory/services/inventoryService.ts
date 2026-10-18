@@ -6,6 +6,7 @@ import type {
   LowStockItem,
   Paged,
   InventoryCount,
+  InventoryCountLine,
   InventoryCountSummary,
 } from '../../../types';
 
@@ -85,6 +86,17 @@ export const inventoryService = {
 
   getCount: async (id: string): Promise<InventoryCount> => {
     const { data } = await api.get<InventoryCount>(`/inventory/count/${id}`);
+    return data;
+  },
+
+  getCountLines: async (
+    id: string,
+    params: { page: number; pageSize: number }
+  ): Promise<Paged<InventoryCountLine>> => {
+    const { data } = await api.get<Paged<InventoryCountLine>>(
+      `/inventory/count/${id}/lines`,
+      { params }
+    );
     return data;
   },
 

@@ -182,7 +182,9 @@ export interface InventoryCount {
   status: 'Draft' | 'Completed';
   createdAt: string;
   completedAt?: string;
-  lines: InventoryCountLine[];
+  lineCount: number;
+  countedCount: number;
+  varianceCount: number;
 }
 
 export interface InventoryCountSummary {

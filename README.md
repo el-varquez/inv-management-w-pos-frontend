@@ -11,10 +11,10 @@ Built with **React 19**, **TypeScript**, and **Vite**.
 | Module | What it does |
 |---|---|
 | **Auth** | Login, plus self-serve registration that provisions a tenant and its first admin |
-| **Items** | Product catalog with categories, search, and a recipe editor for composite items |
-| **Inventory** | Add stock, adjust stock, stocktake, low-stock view, movement history |
+| **Items** | Product catalog with categories, search by name, code or barcode, and a recipe editor whose component picker searches the catalog as you type |
+| **Inventory** | Add stock, adjust stock, stocktake, low-stock view, valuation and movement history — every list paged and searchable by name, code or barcode |
 | **Sales** | POS register for ringing up sales, plus sales history and refunds |
-| **Reports** | Sales, Expenses, Profit, and Best Sellers, with searchable category/item filters |
+| **Reports** | Sales, Expenses, Profit, and Best Sellers, each paged with totals computed by the API; the Profit item filter is a typeahead narrowed by the chosen category |
 | **Cashiers** | Create, deactivate, reactivate, and reset passwords for cashier accounts |
 | **Profile** | Admin self-service — display name and password change |
 | **Platform** | `SuperAdmin` console — tenant list and detail, onboarding, suspend/reactivate, in-place user management |
@@ -37,9 +37,13 @@ src/
 
 **`services/api.ts`** is the single Axios instance. A request interceptor attaches the bearer token from `authStore`; a response interceptor logs the user out on `401`. `apiError.ts` unwraps the API's `{ error: string }` body into a message via `getApiErrorMessage(err, fallback)`.
 
-### Pagination, deliberately split two ways
+### Pagination and search
 
-Browse lists paginate **server-side**, since they grow without bound. Items and every inventory list — stock levels, low stock, valuation, stocktake counts and stocktake lines, inventory history — go through the shared `usePagedQuery` hook (`src/hooks/usePagedQuery.ts`): 20 rows per request, plus a per-visit page cache keyed by filters, page and page size. The cache is cleared on `refetch()` (every mutation already calls it), when the filter key changes and when the screen unmounts, so a revisited page renders with no request while a fresh mutation never shows a stale row. Editable pages opt out: the stocktake lines pass `cache: false` and autosave the current page's edits before a page change. The business-day and utang lists page server-side through their own hooks. Report tables still paginate **client-side** through the shared `<Pagination>` component, because a report is a bounded aggregate already fully loaded to render its summary cards; phase 2 moves them server-side. The two are not interchangeable.
+Every list pages **server-side** through the shared `usePagedQuery` hook (`src/hooks/usePagedQuery.ts`): 20 rows per request, plus a per-visit page cache keyed by filters, page and page size. The cache is cleared on `refetch()` (every mutation already calls it), when the filter key changes and when the screen unmounts, so a revisited page renders with no request while a fresh mutation never shows a stale row. Editable pages opt out: the stocktake lines pass `cache: false` and autosave the current page's edits before a page change or a search change.
+
+Reports (Sales, Expenses, Profit, Best sellers) page their rows the same way while their stat cards read totals the API computes over the whole range, so a card never depends on which page is loaded. The utang ledger is a header (balance, amount paid, markup earned, reminders) plus paged entries, newest first, each carrying the running balance the API computed over the full chronological ledger. The business-day list pages through its own hook.
+
+Search is one optional `search` query parameter on every items and inventory list, applied by the API as an exact barcode or a case-insensitive match on name or item code. Each screen's filter bar has a Search field debounced through `useDebouncedValue` and fed into the hook's key, so typing resets to page 1 and clearing returns to the cached page. `ItemSearchSelect` (`features/items/components`) replaces the dropdowns that used to load the whole catalog: it queries `/items/search` as you type, optionally within one category.
 
 **Tech:** React 19 · TypeScript · Vite · React Router 7 · Zustand · Axios · lucide-react
 

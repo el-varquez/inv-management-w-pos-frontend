@@ -113,8 +113,13 @@ export const inventoryService = {
     return data;
   },
 
-  getValuation: async (): Promise<InventoryValuation> => {
-    const { data } = await api.get<InventoryValuation>('/inventory/valuation');
+  getValuation: async (params: {
+    page: number;
+    pageSize: number;
+  }): Promise<InventoryValuation> => {
+    const { data } = await api.get<InventoryValuation>('/inventory/valuation', {
+      params,
+    });
     return data;
   },
 };

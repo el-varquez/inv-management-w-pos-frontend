@@ -152,8 +152,7 @@ export interface InventoryValuationItem {
   stockValue: number;
 }
 
-export interface InventoryValuation {
-  items: InventoryValuationItem[];
+export interface InventoryValuation extends Paged<InventoryValuationItem> {
   totalValue: number;
   totalItems: number;
   generatedAt: string;

@@ -21,8 +21,13 @@ export const inventoryService = {
     return data;
   },
 
-  getLowStock: async (): Promise<LowStockItem[]> => {
-    const { data } = await api.get<LowStockItem[]>('/inventory/low-stock');
+  getLowStock: async (params: {
+    page: number;
+    pageSize: number;
+  }): Promise<Paged<LowStockItem>> => {
+    const { data } = await api.get<Paged<LowStockItem>>('/inventory/low-stock', {
+      params,
+    });
     return data;
   },
 

@@ -1,12 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { InventoryTabs } from '../components/InventoryTabs';
 import { Pagination } from '../../../components/Pagination';
 import { useInventoryCount } from '../hooks/useInventoryCount';
-import { inventoryService } from '../services/inventoryService';
-import { getApiErrorMessage } from '../../../services/apiError';
+import { useInventoryCounts } from '../hooks/useInventoryCounts';
 import { signed } from '../../../lib/format';
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination';
-import type { InventoryCount, InventoryCountSummary } from '../../../types';
+import type { InventoryCount } from '../../../types';
 
 type Mode = 'landing' | 'counting' | 'done';
 
@@ -15,39 +13,13 @@ export const InventoryCountScreen = () => {
     useInventoryCount();
 
   const [mode, setMode] = useState<Mode>('landing');
-  const [summaries, setSummaries] = useState<InventoryCountSummary[]>([]);
   const [statusFilter, setStatusFilter] = useState<'Draft' | 'Completed'>('Draft');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [listError, setListError] = useState<string | null>(null);
+  const counts = useInventoryCounts(statusFilter);
 
   const [count, setCount] = useState<InventoryCount | null>(null);
   const [notes, setNotes] = useState('');
   const [actuals, setActuals] = useState<Record<string, string>>({});
   const [readOnly, setReadOnly] = useState(false);
-
-  const fetchList = async () => {
-    setListError(null);
-    try {
-      const data = await inventoryService.getCounts({
-        status: statusFilter,
-        page,
-        pageSize: DEFAULT_PAGE_SIZE,
-      });
-      setSummaries(data.items);
-      setTotalPages(data.totalPages);
-      setTotalCount(data.totalCount);
-    } catch (err) {
-      setListError(getApiErrorMessage(err, 'Failed to load counts.'));
-    }
-  };
-
-  /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
-  useEffect(() => {
-    if (mode === 'landing') fetchList();
-  }, [mode, statusFilter, page]);
-  /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 
   const openCount = async (id: string, viewOnly: boolean) => {
     const loaded = await load(id);
@@ -115,7 +87,7 @@ export const InventoryCountScreen = () => {
     setActuals({});
     setNotes('');
     setMode('landing');
-    setPage(1);
+    counts.refetch();
   };
 
   if (mode === 'done') {
@@ -271,38 +243,32 @@ export const InventoryCountScreen = () => {
         </div>
       </div>
       <InventoryTabs />
-      {(listError || error) && (
+      {(counts.error || error) && (
         <div className="login-error" role="alert">
           <span aria-hidden="true">⚠</span>
-          {listError ?? error}
+          {counts.error ?? error}
         </div>
       )}
       <div className="segmented" style={{ marginBottom: 12 }}>
         <button
           className={statusFilter === 'Draft' ? 'seg is-active' : 'seg'}
-          onClick={() => {
-            setStatusFilter('Draft');
-            setPage(1);
-          }}
+          onClick={() => setStatusFilter('Draft')}
         >
           In progress
         </button>
         <button
           className={statusFilter === 'Completed' ? 'seg is-active' : 'seg'}
-          onClick={() => {
-            setStatusFilter('Completed');
-            setPage(1);
-          }}
+          onClick={() => setStatusFilter('Completed')}
         >
           Completed
         </button>
       </div>
       <div className="card table-wrap">
-        {loading ? (
+        {loading || counts.loading ? (
           <div className="state">
             <span className="spinner spinner-dark" aria-hidden="true" />
           </div>
-        ) : summaries.length === 0 ? (
+        ) : counts.summaries.length === 0 ? (
           <div className="state">
             <div className="state-emoji">📋</div>
             <div className="state-title">
@@ -325,7 +291,7 @@ export const InventoryCountScreen = () => {
               </tr>
             </thead>
             <tbody>
-              {summaries.map((s) => (
+              {counts.summaries.map((s) => (
                 <tr key={s.id}>
                   <td>
                     <div className="item-name">{s.reference}</div>
@@ -347,11 +313,11 @@ export const InventoryCountScreen = () => {
         )}
       </div>
       <Pagination
-        page={page}
-        pageSize={DEFAULT_PAGE_SIZE}
-        totalPages={totalPages}
-        totalCount={totalCount}
-        onPageChange={setPage}
+        page={counts.page}
+        pageSize={counts.pageSize}
+        totalPages={counts.totalPages}
+        totalCount={counts.totalCount}
+        onPageChange={counts.setPage}
       />
     </>
   );

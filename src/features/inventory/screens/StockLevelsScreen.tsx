@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useStockLevels } from '../hooks/useStockLevels';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { InventoryTabs } from '../components/InventoryTabs';
 import { AdjustStockModal } from '../components/AdjustStockModal';
 import { Pagination } from '../../../components/Pagination';
@@ -9,6 +10,8 @@ import type { StockLevel } from '../../../types';
 const SKELETON_ROWS = Array.from({ length: 5 });
 
 export const StockLevelsScreen = () => {
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput.trim());
   const {
     stockLevels,
     loading,
@@ -19,7 +22,7 @@ export const StockLevelsScreen = () => {
     pageSize,
     totalCount,
     totalPages,
-  } = useStockLevels();
+  } = useStockLevels(search || undefined);
   const [adjustItem, setAdjustItem] = useState<StockLevel | null>(null);
 
   const closeAndRefresh = () => {
@@ -49,6 +52,29 @@ export const StockLevelsScreen = () => {
       </div>
 
       <InventoryTabs />
+
+      <div className="filter-bar card">
+        <div className="field">
+          <label htmlFor="search">Search</label>
+          <input
+            id="search"
+            className="input"
+            type="search"
+            placeholder="Name, code or barcode"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+        {searchInput !== '' && (
+          <button
+            type="button"
+            className="btn btn-quiet btn-sm filter-clear"
+            onClick={() => setSearchInput('')}
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
 
       <div className="card table-wrap">
         {error ? (
@@ -83,14 +109,25 @@ export const StockLevelsScreen = () => {
             ))}
           </StockTable>
         ) : stockLevels.length === 0 ? (
-          <div className="state">
-            <div className="state-emoji">📦</div>
-            <div className="state-title">No items to track</div>
-            <p className="state-msg">
-              Add items to your catalog first, then come back to manage their
-              stock.
-            </p>
-          </div>
+          search !== '' ? (
+            <div className="state">
+              <div className="state-emoji">🔍</div>
+              <div className="state-title">No items match your search</div>
+              <p className="state-msg">Try a different name, item code or barcode.</p>
+              <button className="btn btn-ghost" onClick={() => setSearchInput('')}>
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <div className="state">
+              <div className="state-emoji">📦</div>
+              <div className="state-title">No items to track</div>
+              <p className="state-msg">
+                Add items to your catalog first, then come back to manage their
+                stock.
+              </p>
+            </div>
+          )
         ) : (
           <StockTable>
             {stockLevels.map((s) => (

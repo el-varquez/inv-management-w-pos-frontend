@@ -21,6 +21,7 @@ export const itemService = {
     page: number;
     pageSize: number;
     isComposite?: boolean;
+    search?: string;
   }): Promise<Paged<Item>> => {
     const { data } = await api.get<Paged<Item>>('/items', { params });
     return data;

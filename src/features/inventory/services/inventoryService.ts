@@ -10,11 +10,11 @@ import type {
   InventoryCountSummary,
 } from '../../../types';
 
+/** Page parameters plus the optional list search; callers omit `search` when it is blank. */
+type ListParams = { page: number; pageSize: number; search?: string };
+
 export const inventoryService = {
-  getStockLevels: async (params: {
-    page: number;
-    pageSize: number;
-  }): Promise<Paged<StockLevel>> => {
+  getStockLevels: async (params: ListParams): Promise<Paged<StockLevel>> => {
     const { data } = await api.get<Paged<StockLevel>>(
       '/inventory/stock-levels',
       { params }
@@ -22,10 +22,7 @@ export const inventoryService = {
     return data;
   },
 
-  getLowStock: async (params: {
-    page: number;
-    pageSize: number;
-  }): Promise<Paged<LowStockItem>> => {
+  getLowStock: async (params: ListParams): Promise<Paged<LowStockItem>> => {
     const { data } = await api.get<Paged<LowStockItem>>('/inventory/low-stock', {
       params,
     });
@@ -117,6 +114,7 @@ export const inventoryService = {
     type?: string;
     page: number;
     pageSize: number;
+    search?: string;
   }): Promise<Paged<InventoryHistoryItem>> => {
     const { data } = await api.get<Paged<InventoryHistoryItem>>(
       '/inventory/history',
@@ -125,10 +123,7 @@ export const inventoryService = {
     return data;
   },
 
-  getValuation: async (params: {
-    page: number;
-    pageSize: number;
-  }): Promise<InventoryValuation> => {
+  getValuation: async (params: ListParams): Promise<InventoryValuation> => {
     const { data } = await api.get<InventoryValuation>('/inventory/valuation', {
       params,
     });

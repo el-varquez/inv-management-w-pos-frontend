@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useItems } from '../hooks/useItems';
 import { useCategories } from '../hooks/useCategories';
 import { useIsAdmin } from '../../../store/authStore';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { ItemsTabs } from '../components/ItemsTabs';
 import { ItemFormModal } from '../components/ItemFormModal';
 import { DeleteItemModal } from '../components/DeleteItemModal';
@@ -24,8 +25,8 @@ type RecipeFilter = '' | 'true' | 'false';
 
 export const ItemsScreen = () => {
   const [recipeFilter, setRecipeFilter] = useState<RecipeFilter>('');
-  const filters =
-    recipeFilter === '' ? undefined : { isComposite: recipeFilter === 'true' };
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput.trim());
   const {
     items,
     loading,
@@ -36,10 +37,19 @@ export const ItemsScreen = () => {
     pageSize,
     totalCount,
     totalPages,
-  } = useItems(filters);
+  } = useItems({
+    isComposite: recipeFilter === '' ? undefined : recipeFilter === 'true',
+    search: search || undefined,
+  });
   const { categories, createCategory } = useCategories();
   const isAdmin = useIsAdmin();
   const [modal, setModal] = useState<ModalState>(null);
+
+  const hasFilters = recipeFilter !== '' || searchInput !== '';
+  const clearFilters = () => {
+    setRecipeFilter('');
+    setSearchInput('');
+  };
 
   const closeAndRefresh = () => {
     setModal(null);
@@ -79,6 +89,17 @@ export const ItemsScreen = () => {
 
       <div className="filter-bar card">
         <div className="field">
+          <label htmlFor="search">Search</label>
+          <input
+            id="search"
+            className="input"
+            type="search"
+            placeholder="Name, code or barcode"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+        <div className="field">
           <label htmlFor="recipe-filter">Type</label>
           <SearchSelect
             id="recipe-filter"
@@ -91,11 +112,11 @@ export const ItemsScreen = () => {
             ]}
           />
         </div>
-        {recipeFilter !== '' && (
+        {hasFilters && (
           <button
             type="button"
             className="btn btn-quiet btn-sm filter-clear"
-            onClick={() => setRecipeFilter('')}
+            onClick={clearFilters}
           >
             Clear filters
           </button>
@@ -140,7 +161,16 @@ export const ItemsScreen = () => {
             ))}
           </ItemsTable>
         ) : items.length === 0 ? (
-          recipeFilter !== '' ? (
+          search !== '' ? (
+            <div className="state">
+              <div className="state-emoji">🔍</div>
+              <div className="state-title">No items match your search</div>
+              <p className="state-msg">Try a different name, item code or barcode.</p>
+              <button className="btn btn-ghost" onClick={clearFilters}>
+                Clear filters
+              </button>
+            </div>
+          ) : recipeFilter !== '' ? (
             <div className="state">
               <div className="state-emoji">🗂️</div>
               <div className="state-title">
@@ -153,10 +183,7 @@ export const ItemsScreen = () => {
                   ? 'No items have components yet. Open an item’s Recipe to add components and turn it into a recipe.'
                   : 'No standard items match this filter.'}
               </p>
-              <button
-                className="btn btn-ghost"
-                onClick={() => setRecipeFilter('')}
-              >
+              <button className="btn btn-ghost" onClick={clearFilters}>
                 Clear filters
               </button>
             </div>

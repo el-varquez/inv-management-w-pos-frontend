@@ -1,12 +1,16 @@
+import { useState } from 'react';
 import { useLowStock } from '../hooks/useLowStock';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { InventoryTabs } from '../components/InventoryTabs';
 import { Pagination } from '../../../components/Pagination';
 
 const SKELETON_ROWS = Array.from({ length: 4 });
 
 export const LowStockScreen = () => {
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput.trim());
   const { items, loading, error, refetch, page, setPage, pageSize, totalCount, totalPages } =
-    useLowStock();
+    useLowStock(search || undefined);
 
   return (
     <>
@@ -20,7 +24,9 @@ export const LowStockScreen = () => {
               : error
                 ? 'Could not load low stock items.'
                 : totalCount === 0
-                  ? 'Everything is above its threshold.'
+                  ? search
+                    ? 'No low-stock items match your search.'
+                    : 'Everything is above its threshold.'
                   : `${totalCount} item${totalCount === 1 ? '' : 's'} need restocking`}
           </p>
         </div>
@@ -32,6 +38,29 @@ export const LowStockScreen = () => {
       </div>
 
       <InventoryTabs />
+
+      <div className="filter-bar card">
+        <div className="field">
+          <label htmlFor="search">Search</label>
+          <input
+            id="search"
+            className="input"
+            type="search"
+            placeholder="Name, code or barcode"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+        {searchInput !== '' && (
+          <button
+            type="button"
+            className="btn btn-quiet btn-sm filter-clear"
+            onClick={() => setSearchInput('')}
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
 
       <div className="card table-wrap">
         {error ? (
@@ -66,13 +95,26 @@ export const LowStockScreen = () => {
             ))}
           </LowStockTable>
         ) : items.length === 0 ? (
-          <div className="state">
-            <div className="state-emoji">✅</div>
-            <div className="state-title">All good</div>
-            <p className="state-msg">
-              No items are below their low-stock threshold right now.
-            </p>
-          </div>
+          search !== '' ? (
+            <div className="state">
+              <div className="state-emoji">🔍</div>
+              <div className="state-title">No matches</div>
+              <p className="state-msg">
+                No low-stock items match that name, code or barcode.
+              </p>
+              <button className="btn btn-ghost" onClick={() => setSearchInput('')}>
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <div className="state">
+              <div className="state-emoji">✅</div>
+              <div className="state-title">All good</div>
+              <p className="state-msg">
+                No items are below their low-stock threshold right now.
+              </p>
+            </div>
+          )
         ) : (
           <LowStockTable>
             {items.map((i) => (

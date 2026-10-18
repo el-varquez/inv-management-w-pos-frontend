@@ -365,6 +365,7 @@ export interface UtangLedgerEntry {
   isVoided: boolean;
   editedFrom: number | null;
   createdAt: string;
+  runningBalance: number | null;
 }
 
 export interface SukiLedger {
@@ -372,12 +373,12 @@ export interface SukiLedger {
   name: string;
   phone: string | null;
   balance: number;
+  amountPaid: number;
   markupEarned: number;
   debtSince: string | null;
   lastPaidAt: string | null;
   daysSincePayment: number | null;
   paymentOverdue: boolean;
-  entries: UtangLedgerEntry[];
 }
 
 export interface UtangOutstanding {

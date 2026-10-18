@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSukis } from '../hooks/useSukis';
 import { useSukiLedger } from '../hooks/useSukiLedger';
+import { useLedgerEntries } from '../hooks/useLedgerEntries';
 import { useUtangSummary } from '../hooks/useUtangSummary';
 import { useDateRange } from '../../../hooks/useDateRange';
 import { useSettings } from '../../../hooks/useSettings';
@@ -30,12 +31,10 @@ interface LedgerDisplayRow {
   running: string;
 }
 
-const buildLedgerRows = (entries: UtangLedgerEntry[]): LedgerDisplayRow[] => {
-  let running = 0;
-  return entries.map((entry) => {
-    if (!entry.isVoided) {
-      running += entry.type === 'Payment' ? -entry.amount : entry.amount;
-    }
+// The running balance is computed by the API over the whole chronological ledger, so a page
+// can start anywhere; voided entries carry none.
+const buildLedgerRows = (entries: UtangLedgerEntry[]): LedgerDisplayRow[] =>
+  entries.map((entry) => {
     const label =
       entry.type === 'Charge'
         ? `Charge · ${entry.invoiceNumber ?? ''}`
@@ -47,13 +46,18 @@ const buildLedgerRows = (entries: UtangLedgerEntry[]): LedgerDisplayRow[] => {
         entry.editedFrom !== null
           ? `edited · was ${peso.format(entry.editedFrom)}`
           : null,
-      running: entry.isVoided ? '—' : peso.format(running),
+      running:
+        entry.runningBalance === null ? '—' : peso.format(entry.runningBalance),
     };
   });
-};
 
 const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
   const { ledger, loading, error, refetch } = useSukiLedger(suki.id);
+  const entries = useLedgerEntries(suki.id);
+  const refreshAll = () => {
+    refetch();
+    entries.refetch();
+  };
   const [collecting, setCollecting] = useState(false);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -75,10 +79,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
       }
     : suki;
 
-  const amountPaid =
-    ledger?.entries
-      .filter((e) => e.type === 'Payment' && !e.isVoided)
-      .reduce((sum, e) => sum + e.amount, 0) ?? 0;
+  const amountPaid = ledger?.amountPaid ?? 0;
 
   return (
     <>
@@ -131,20 +132,20 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
       )}
 
       <div className="card table-wrap">
-        {error ? (
+        {error || entries.error ? (
           <div className="state state-error">
             <div className="state-emoji">⚠️</div>
             <div className="state-title">Something went wrong</div>
-            <p className="state-msg">{error}</p>
-            <button className="btn btn-ghost" onClick={refetch}>
+            <p className="state-msg">{error ?? entries.error}</p>
+            <button className="btn btn-ghost" onClick={refreshAll}>
               Try again
             </button>
           </div>
-        ) : loading || !ledger ? (
+        ) : loading || !ledger || (entries.loading && entries.items.length === 0) ? (
           <div className="state">
             <div className="state-title">Loading ledger…</div>
           </div>
-        ) : ledger.entries.length === 0 ? (
+        ) : entries.totalCount === 0 ? (
           <div className="state">
             <div className="state-emoji">📒</div>
             <div className="state-title">No entries yet</div>
@@ -153,6 +154,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
             </p>
           </div>
         ) : (
+          <>
           <table className="ledger">
             <thead>
               <tr>
@@ -165,7 +167,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
               </tr>
             </thead>
             <tbody>
-              {buildLedgerRows(ledger.entries).map((row) => (
+              {buildLedgerRows(entries.items).map((row) => (
                 <tr
                   key={row.entry.id}
                   style={row.entry.isVoided ? { opacity: 0.6 } : undefined}
@@ -263,13 +265,21 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
               ))}
             </tbody>
           </table>
+          <Pagination
+            page={entries.page}
+            pageSize={entries.pageSize}
+            totalCount={entries.totalCount}
+            totalPages={entries.totalPages}
+            onPageChange={entries.setPage}
+          />
+          </>
         )}
       </div>
 
       {deleting && (
         <DeleteSukiModal
           suki={current}
-          hasEntries={(ledger?.entries.length ?? 0) > 0}
+          hasEntries={entries.totalCount > 0}
           onClose={() => setDeleting(false)}
           onDeleted={() => {
             setDeleting(false);
@@ -284,7 +294,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
           onClose={() => setVoidingEntry(null)}
           onSaved={() => {
             setVoidingEntry(null);
-            refetch();
+            refreshAll();
           }}
         />
       )}
@@ -295,7 +305,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
           onClose={() => setEditingPayment(null)}
           onSaved={() => {
             setEditingPayment(null);
-            refetch();
+            refreshAll();
           }}
         />
       )}
@@ -306,7 +316,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
           onClose={() => setEditing(false)}
           onSaved={() => {
             setEditing(false);
-            refetch();
+            refreshAll();
           }}
         />
       )}
@@ -318,7 +328,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
           onClose={() => setCollecting(false)}
           onSaved={() => {
             setCollecting(false);
-            refetch();
+            refreshAll();
           }}
         />
       )}

@@ -1,10 +1,12 @@
 import { useLowStock } from '../hooks/useLowStock';
 import { InventoryTabs } from '../components/InventoryTabs';
+import { Pagination } from '../../../components/Pagination';
 
 const SKELETON_ROWS = Array.from({ length: 4 });
 
 export const LowStockScreen = () => {
-  const { items, loading, error, refetch } = useLowStock();
+  const { items, loading, error, refetch, page, setPage, pageSize, totalCount, totalPages } =
+    useLowStock();
 
   return (
     <>
@@ -17,9 +19,9 @@ export const LowStockScreen = () => {
               ? 'Checking stock…'
               : error
                 ? 'Could not load low stock items.'
-                : items.length === 0
+                : totalCount === 0
                   ? 'Everything is above its threshold.'
-                  : `${items.length} item${items.length === 1 ? '' : 's'} need restocking`}
+                  : `${totalCount} item${totalCount === 1 ? '' : 's'} need restocking`}
           </p>
         </div>
         <div className="page-actions">
@@ -93,6 +95,16 @@ export const LowStockScreen = () => {
           </LowStockTable>
         )}
       </div>
+
+      {!loading && !error && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
+      )}
     </>
   );
 };

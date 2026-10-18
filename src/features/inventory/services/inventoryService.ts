@@ -6,6 +6,7 @@ import type {
   LowStockItem,
   Paged,
   InventoryCount,
+  InventoryCountLine,
   InventoryCountSummary,
 } from '../../../types';
 
@@ -21,8 +22,13 @@ export const inventoryService = {
     return data;
   },
 
-  getLowStock: async (): Promise<LowStockItem[]> => {
-    const { data } = await api.get<LowStockItem[]>('/inventory/low-stock');
+  getLowStock: async (params: {
+    page: number;
+    pageSize: number;
+  }): Promise<Paged<LowStockItem>> => {
+    const { data } = await api.get<Paged<LowStockItem>>('/inventory/low-stock', {
+      params,
+    });
     return data;
   },
 
@@ -83,6 +89,17 @@ export const inventoryService = {
     return data;
   },
 
+  getCountLines: async (
+    id: string,
+    params: { page: number; pageSize: number }
+  ): Promise<Paged<InventoryCountLine>> => {
+    const { data } = await api.get<Paged<InventoryCountLine>>(
+      `/inventory/count/${id}/lines`,
+      { params }
+    );
+    return data;
+  },
+
   getCounts: async (params: {
     status?: 'Draft' | 'Completed';
     page: number;
@@ -108,8 +125,13 @@ export const inventoryService = {
     return data;
   },
 
-  getValuation: async (): Promise<InventoryValuation> => {
-    const { data } = await api.get<InventoryValuation>('/inventory/valuation');
+  getValuation: async (params: {
+    page: number;
+    pageSize: number;
+  }): Promise<InventoryValuation> => {
+    const { data } = await api.get<InventoryValuation>('/inventory/valuation', {
+      params,
+    });
     return data;
   },
 };

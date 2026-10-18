@@ -1,11 +1,23 @@
 import { useInventoryValuation } from '../hooks/useInventoryValuation';
 import { InventoryTabs } from '../components/InventoryTabs';
+import { Pagination } from '../../../components/Pagination';
 import { peso, formatDateTime } from '../../../lib/format';
 
 const SKELETON_ROWS = Array.from({ length: 5 });
 
 export const InventoryValuationScreen = () => {
-  const { valuation, loading, error, refetch } = useInventoryValuation();
+  const {
+    valuation,
+    items,
+    loading,
+    error,
+    refetch,
+    page,
+    setPage,
+    pageSize,
+    totalCount,
+    totalPages,
+  } = useInventoryValuation();
 
   return (
     <>
@@ -81,7 +93,7 @@ export const InventoryValuationScreen = () => {
               </tr>
             ))}
           </ValuationTable>
-        ) : !valuation || valuation.items.length === 0 ? (
+        ) : !valuation || items.length === 0 ? (
           <div className="state">
             <div className="state-emoji">💰</div>
             <div className="state-title">Nothing to value</div>
@@ -89,7 +101,7 @@ export const InventoryValuationScreen = () => {
           </div>
         ) : (
           <ValuationTable>
-            {valuation.items.map((i) => (
+            {items.map((i) => (
               <tr key={i.itemId}>
                 <td>
                   <div className="item-name">{i.itemName}</div>
@@ -102,15 +114,19 @@ export const InventoryValuationScreen = () => {
                 <td className="num tnum price">{peso.format(i.stockValue)}</td>
               </tr>
             ))}
-            <tr className="total-row">
-              <td colSpan={4}>Total</td>
-              <td className="num tnum price">
-                {peso.format(valuation.totalValue)}
-              </td>
-            </tr>
           </ValuationTable>
         )}
       </div>
+
+      {valuation && !loading && !error && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
+      )}
     </>
   );
 };

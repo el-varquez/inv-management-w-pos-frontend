@@ -1,66 +1,70 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { InventoryTabs } from '../components/InventoryTabs';
 import { Pagination } from '../../../components/Pagination';
 import { useInventoryCount } from '../hooks/useInventoryCount';
+import { useInventoryCounts } from '../hooks/useInventoryCounts';
+import { usePagedQuery } from '../../../hooks/usePagedQuery';
 import { inventoryService } from '../services/inventoryService';
-import { getApiErrorMessage } from '../../../services/apiError';
 import { signed } from '../../../lib/format';
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination';
-import type { InventoryCount, InventoryCountSummary } from '../../../types';
+import type { InventoryCount, InventoryCountLine, Paged } from '../../../types';
 
 type Mode = 'landing' | 'counting' | 'done';
+
+/** Blank input ↔ uncounted (null). */
+const toNumber = (raw: string | undefined): number | null =>
+  raw === undefined || raw === '' ? null : Number(raw);
 
 export const InventoryCountScreen = () => {
   const { start, load, saveProgress, complete, loading, saving, error } =
     useInventoryCount();
 
   const [mode, setMode] = useState<Mode>('landing');
-  const [summaries, setSummaries] = useState<InventoryCountSummary[]>([]);
   const [statusFilter, setStatusFilter] = useState<'Draft' | 'Completed'>('Draft');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [listError, setListError] = useState<string | null>(null);
+  const counts = useInventoryCounts(statusFilter);
 
   const [count, setCount] = useState<InventoryCount | null>(null);
   const [notes, setNotes] = useState('');
+  /** Editable values keyed by itemId, as typed. */
   const [actuals, setActuals] = useState<Record<string, string>>({});
+  /** The last quantity the server is known to hold per itemId (null = uncounted). */
+  const [baseline, setBaseline] = useState<Record<string, number | null>>({});
   const [readOnly, setReadOnly] = useState(false);
 
-  const fetchList = async () => {
-    setListError(null);
-    try {
-      const data = await inventoryService.getCounts({
-        status: statusFilter,
-        page,
-        pageSize: DEFAULT_PAGE_SIZE,
-      });
-      setSummaries(data.items);
-      setTotalPages(data.totalPages);
-      setTotalCount(data.totalCount);
-    } catch (err) {
-      setListError(getApiErrorMessage(err, 'Failed to load counts.'));
-    }
-  };
+  // Lines are editable, so they are never served from the page cache.
+  const countId = count?.id ?? '';
+  const lines = usePagedQuery<Paged<InventoryCountLine>>(
+    (p) =>
+      countId
+        ? inventoryService.getCountLines(countId, p)
+        : Promise.resolve({ items: [], page: 1, pageSize: p.pageSize, totalCount: 0, totalPages: 1 }),
+    { key: countId, cache: false, fallbackError: 'Failed to load count lines.' }
+  );
 
-  /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+  // Seed the editable values and the server baseline from every loaded page.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (mode === 'landing') fetchList();
-  }, [mode, statusFilter, page]);
-  /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+    const pageLines = lines.data?.items;
+    if (!pageLines || pageLines.length === 0) return;
+    setActuals((prev) => {
+      const next = { ...prev };
+      for (const l of pageLines) next[l.itemId] = l.actualQty === null ? '' : String(l.actualQty);
+      return next;
+    });
+    setBaseline((prev) => {
+      const next = { ...prev };
+      for (const l of pageLines) next[l.itemId] = l.actualQty;
+      return next;
+    });
+  }, [lines.data]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const openCount = async (id: string, viewOnly: boolean) => {
     const loaded = await load(id);
     if (!loaded) return;
+    setActuals({});
+    setBaseline({});
     setCount(loaded);
     setNotes(loaded.notes ?? '');
-    setActuals(
-      Object.fromEntries(
-        loaded.lines
-          .filter((l) => l.actualQty !== null)
-          .map((l) => [l.itemId, String(l.actualQty)])
-      )
-    );
     setReadOnly(viewOnly);
     setMode('counting');
   };
@@ -70,52 +74,81 @@ export const InventoryCountScreen = () => {
     if (id) await openCount(id, false);
   };
 
-  const payload = useMemo(
-    () =>
-      (count?.lines ?? []).map((l) => {
-        const raw = actuals[l.itemId];
-        return {
-          itemId: l.itemId,
-          actualQty: raw === undefined || raw === '' ? null : Number(raw),
-        };
-      }),
-    [count, actuals]
-  );
+  const pageLines = useMemo(() => lines.data?.items ?? [], [lines.data]);
 
   const rows = useMemo(
     () =>
-      (count?.lines ?? []).map((l) => {
-        const raw = actuals[l.itemId];
-        const counted = raw === undefined || raw === '' ? null : Number(raw);
+      pageLines.map((l) => {
+        const counted = toNumber(actuals[l.itemId]);
         return {
           ...l,
           counted,
           variance: counted === null ? null : counted - l.expectedQty,
         };
       }),
-    [count, actuals]
+    [pageLines, actuals]
   );
 
-  const countedCount = rows.filter((r) => r.counted !== null).length;
-  const varianceCount = rows.filter((r) => r.variance !== null && r.variance !== 0).length;
+  const savedQty = useCallback(
+    (l: InventoryCountLine) => (l.itemId in baseline ? baseline[l.itemId] : l.actualQty),
+    [baseline]
+  );
 
-  const handleSave = async () => {
-    if (!count) return;
-    await saveProgress(count.id, payload);
+  /** This page's lines whose typed value differs from what the server holds. */
+  const dirtyLines = useMemo(
+    () =>
+      rows
+        .filter((r) => r.counted !== savedQty(r))
+        .map((r) => ({ itemId: r.itemId, actualQty: r.counted })),
+    [rows, savedQty]
+  );
+
+  // Footer totals: the header's saved stats, with this page's saved values swapped for the typed ones.
+  const savedCountedOnPage = rows.filter((r) => savedQty(r) !== null).length;
+  const savedVarianceOnPage = rows.filter((r) => {
+    const q = savedQty(r);
+    return q !== null && q !== r.expectedQty;
+  }).length;
+  const localCountedOnPage = rows.filter((r) => r.counted !== null).length;
+  const localVarianceOnPage = rows.filter((r) => r.variance !== null && r.variance !== 0).length;
+  const countedCount = (count?.countedCount ?? 0) - savedCountedOnPage + localCountedOnPage;
+  const varianceCount = (count?.varianceCount ?? 0) - savedVarianceOnPage + localVarianceOnPage;
+
+  /** Autosave this page's edits. Resolves false when the save failed, so the caller must stay put. */
+  const syncDirty = async (): Promise<boolean> => {
+    if (!count) return false;
+    if (dirtyLines.length === 0) return true;
+    const ok = await saveProgress(count.id, dirtyLines);
+    if (!ok) return false;
+    setBaseline((prev) => {
+      const next = { ...prev };
+      for (const d of dirtyLines) next[d.itemId] = d.actualQty;
+      return next;
+    });
+    const refreshed = await load(count.id);
+    if (refreshed) setCount(refreshed);
+    return true;
   };
+
+  const changePage = async (p: number) => {
+    if (await syncDirty()) lines.setPage(p);
+  };
+
+  const handleSave = () => syncDirty();
 
   const handleSubmit = async () => {
     if (!count) return;
-    const ok = await complete(count.id, payload);
+    const ok = await complete(count.id, dirtyLines);
     if (ok) setMode('done');
   };
 
   const backToLanding = () => {
     setCount(null);
     setActuals({});
+    setBaseline({});
     setNotes('');
     setMode('landing');
-    setPage(1);
+    counts.refetch();
   };
 
   if (mode === 'done') {
@@ -165,68 +198,84 @@ export const InventoryCountScreen = () => {
           </div>
         </div>
         <InventoryTabs />
-        {error && (
+        {(error || lines.error) && (
           <div className="login-error" role="alert">
             <span aria-hidden="true">⚠</span>
-            {error}
+            {error ?? lines.error}
           </div>
         )}
         <div className="card table-wrap">
-          <table className="ledger">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th className="item-sub-cat">Category</th>
-                <th className="num">Expected</th>
-                <th className="num">Counted</th>
-                <th className="num">Variance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.itemId}>
-                  <td>
-                    <div className="item-name">{r.itemName}</div>
-                  </td>
-                  <td className="item-sub-cat">
-                    <span className="cat-pill">{r.categoryName}</span>
-                  </td>
-                  <td className="num tnum cost">{r.expectedQty}</td>
-                  <td className="num">
-                    {readOnly ? (
-                      <span className="tnum">{r.counted ?? '—'}</span>
-                    ) : (
-                      <input
-                        className="input input-inline tnum"
-                        type="number"
-                        min="0"
-                        step="1"
-                        placeholder={String(r.expectedQty)}
-                        value={actuals[r.itemId] ?? ''}
-                        onChange={(e) =>
-                          setActuals((a) => ({ ...a, [r.itemId]: e.target.value }))
-                        }
-                      />
-                    )}
-                  </td>
-                  <td className="num">
-                    {r.variance === null || r.variance === 0 ? (
-                      <span className="tnum text-muted">
-                        {r.variance === null ? '—' : '0'}
-                      </span>
-                    ) : (
-                      <span
-                        className={`tnum ${r.variance < 0 ? 'text-red' : 'text-green'}`}
-                      >
-                        {signed(r.variance)}
-                      </span>
-                    )}
-                  </td>
+          {lines.loading && rows.length === 0 ? (
+            <div className="state">
+              <span className="spinner spinner-dark" aria-hidden="true" />
+            </div>
+          ) : (
+            <table className="ledger">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th className="item-sub-cat">Category</th>
+                  <th className="num">Expected</th>
+                  <th className="num">Counted</th>
+                  <th className="num">Variance</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.itemId}>
+                    <td>
+                      <div className="item-name">{r.itemName}</div>
+                    </td>
+                    <td className="item-sub-cat">
+                      <span className="cat-pill">{r.categoryName}</span>
+                    </td>
+                    <td className="num tnum cost">{r.expectedQty}</td>
+                    <td className="num">
+                      {readOnly ? (
+                        <span className="tnum">{r.counted ?? '—'}</span>
+                      ) : (
+                        <input
+                          className="input input-inline tnum"
+                          type="number"
+                          min="0"
+                          step="1"
+                          disabled={saving || lines.loading}
+                          placeholder={String(r.expectedQty)}
+                          value={actuals[r.itemId] ?? ''}
+                          onChange={(e) =>
+                            setActuals((a) => ({ ...a, [r.itemId]: e.target.value }))
+                          }
+                        />
+                      )}
+                    </td>
+                    <td className="num">
+                      {r.variance === null || r.variance === 0 ? (
+                        <span className="tnum text-muted">
+                          {r.variance === null ? '—' : '0'}
+                        </span>
+                      ) : (
+                        <span
+                          className={`tnum ${r.variance < 0 ? 'text-red' : 'text-green'}`}
+                        >
+                          {signed(r.variance)}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
+        {!lines.loading && !lines.error && (
+          <Pagination
+            page={lines.page}
+            pageSize={lines.pageSize}
+            totalCount={lines.totalCount}
+            totalPages={lines.totalPages}
+            onPageChange={changePage}
+          />
+        )}
         {!readOnly && (
           <div className="card count-footer">
             <div className="count-summary">
@@ -237,14 +286,14 @@ export const InventoryCountScreen = () => {
                 <button
                   className="btn btn-ghost"
                   onClick={handleSave}
-                  disabled={saving}
+                  disabled={saving || lines.loading}
                 >
                   {saving ? 'Saving…' : 'Save draft'}
                 </button>
                 <button
                   className="btn btn-primary"
                   onClick={handleSubmit}
-                  disabled={saving || countedCount === 0}
+                  disabled={saving || lines.loading || countedCount === 0}
                 >
                   Submit count
                 </button>
@@ -271,38 +320,32 @@ export const InventoryCountScreen = () => {
         </div>
       </div>
       <InventoryTabs />
-      {(listError || error) && (
+      {(counts.error || error) && (
         <div className="login-error" role="alert">
           <span aria-hidden="true">⚠</span>
-          {listError ?? error}
+          {counts.error ?? error}
         </div>
       )}
       <div className="segmented" style={{ marginBottom: 12 }}>
         <button
           className={statusFilter === 'Draft' ? 'seg is-active' : 'seg'}
-          onClick={() => {
-            setStatusFilter('Draft');
-            setPage(1);
-          }}
+          onClick={() => setStatusFilter('Draft')}
         >
           In progress
         </button>
         <button
           className={statusFilter === 'Completed' ? 'seg is-active' : 'seg'}
-          onClick={() => {
-            setStatusFilter('Completed');
-            setPage(1);
-          }}
+          onClick={() => setStatusFilter('Completed')}
         >
           Completed
         </button>
       </div>
       <div className="card table-wrap">
-        {loading ? (
+        {loading || counts.loading ? (
           <div className="state">
             <span className="spinner spinner-dark" aria-hidden="true" />
           </div>
-        ) : summaries.length === 0 ? (
+        ) : counts.summaries.length === 0 ? (
           <div className="state">
             <div className="state-emoji">📋</div>
             <div className="state-title">
@@ -325,7 +368,7 @@ export const InventoryCountScreen = () => {
               </tr>
             </thead>
             <tbody>
-              {summaries.map((s) => (
+              {counts.summaries.map((s) => (
                 <tr key={s.id}>
                   <td>
                     <div className="item-name">{s.reference}</div>
@@ -347,11 +390,11 @@ export const InventoryCountScreen = () => {
         )}
       </div>
       <Pagination
-        page={page}
-        pageSize={DEFAULT_PAGE_SIZE}
-        totalPages={totalPages}
-        totalCount={totalCount}
-        onPageChange={setPage}
+        page={counts.page}
+        pageSize={counts.pageSize}
+        totalPages={counts.totalPages}
+        totalCount={counts.totalCount}
+        onPageChange={counts.setPage}
       />
     </>
   );

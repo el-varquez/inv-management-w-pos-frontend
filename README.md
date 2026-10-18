@@ -39,7 +39,7 @@ src/
 
 ### Pagination, deliberately split two ways
 
-Browse lists — Items, stock levels, sales and inventory history — paginate **server-side**, since they grow without bound. Report tables paginate **client-side** through the shared `<Pagination>` component, because a report is a bounded aggregate already fully loaded to render its summary cards. The two are not interchangeable.
+Browse lists paginate **server-side**, since they grow without bound. Items and every inventory list — stock levels, low stock, valuation, stocktake counts and stocktake lines, inventory history — go through the shared `usePagedQuery` hook (`src/hooks/usePagedQuery.ts`): 20 rows per request, plus a per-visit page cache keyed by filters, page and page size. The cache is cleared on `refetch()` (every mutation already calls it), when the filter key changes and when the screen unmounts, so a revisited page renders with no request while a fresh mutation never shows a stale row. Editable pages opt out: the stocktake lines pass `cache: false` and autosave the current page's edits before a page change. The business-day and utang lists page server-side through their own hooks. Report tables still paginate **client-side** through the shared `<Pagination>` component, because a report is a bounded aggregate already fully loaded to render its summary cards; phase 2 moves them server-side. The two are not interchangeable.
 
 **Tech:** React 19 · TypeScript · Vite · React Router 7 · Zustand · Axios · lucide-react
 

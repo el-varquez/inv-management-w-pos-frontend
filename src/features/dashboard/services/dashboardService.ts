@@ -2,6 +2,7 @@ import api from '../../../services/api';
 import type {
   BestSeller,
   DashboardSummary,
+  Paged,
   ProfitReport,
   SalesTrend,
   TrendPeriod,
@@ -20,10 +21,12 @@ export const dashboardService = {
     return data;
   },
 
-  getBestSellers: async (range?: { from?: string; to?: string }): Promise<BestSeller[]> => {
-    const { data } = await api.get<BestSeller[]>('/reports/best-sellers', {
-      params: range,
-    });
+  getBestSellers: async (params: {
+    from?: string;
+    page: number;
+    pageSize: number;
+  }): Promise<Paged<BestSeller>> => {
+    const { data } = await api.get<Paged<BestSeller>>('/reports/best-sellers', { params });
     return data;
   },
 

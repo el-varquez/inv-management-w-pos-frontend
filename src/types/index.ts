@@ -219,13 +219,12 @@ export interface SalesReportDaily {
   transactionCount: number;
 }
 
-export interface SalesReport {
+export interface SalesReport extends Paged<SalesReportDaily> {
   grossSales: number;
   totalDiscounts: number;
   totalRefunds: number;
   netSales: number;
   transactionCount: number;
-  dailyBreakdown: SalesReportDaily[];
   from?: string | null;
   to?: string | null;
 }
@@ -239,12 +238,11 @@ export interface ExpensePurchase {
   supplierName?: string;
 }
 
-export interface ExpenseReport {
+export interface ExpenseReport extends Paged<ExpensePurchase> {
   costOfPurchases: number;
   inventoryLoss: number;
   totalExpenses: number;
   breakdown: { category: string; amount: number }[];
-  purchases: ExpensePurchase[];
   from?: string | null;
   to?: string | null;
 }
@@ -260,14 +258,13 @@ export interface ProfitDetail {
   marginPercent: number;
 }
 
-export interface ProfitReport {
+export interface ProfitReport extends Paged<ProfitDetail> {
   netSales: number;
   costOfGoodsSold: number;
   grossProfit: number;
   inventoryLoss: number;
   netProfit: number;
   grossMarginPercent: number;
-  details: ProfitDetail[];
   from?: string | null;
   to?: string | null;
 }

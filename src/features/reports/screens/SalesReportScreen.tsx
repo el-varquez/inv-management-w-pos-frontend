@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { useSalesReport } from '../hooks/useSalesReport';
 import { useDateRange } from '../../../hooks/useDateRange';
 import { ReportsTabs } from '../components/ReportsTabs';
 import { DateRangeControls } from '../../../components/DateRangeControls';
 import { Pagination } from '../../../components/Pagination';
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination';
 import { peso, formatDate } from '../../../lib/format';
 
 const SKELETON_ROWS = Array.from({ length: 5 });
@@ -19,25 +17,18 @@ export const SalesReportScreen = () => {
     setCustomTo,
     range,
   } = useDateRange('month');
-  const { report, loading, error, refetch } = useSalesReport(range);
-
-  const daily = report?.dailyBreakdown ?? [];
-  const pageSize = DEFAULT_PAGE_SIZE;
-  const [page, setPage] = useState(1);
-
-  const rangeKey = `${range.from ?? ''}|${range.to ?? ''}`;
-  const [prevRangeKey, setPrevRangeKey] = useState(rangeKey);
-  if (rangeKey !== prevRangeKey) {
-    setPrevRangeKey(rangeKey);
-    setPage(1);
-  }
-
-  const totalPages = Math.max(1, Math.ceil(daily.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const pageRows = daily.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const {
+    report,
+    items: daily,
+    loading,
+    error,
+    refetch,
+    page,
+    setPage,
+    pageSize,
+    totalCount,
+    totalPages,
+  } = useSalesReport(range);
 
   return (
     <>
@@ -149,7 +140,7 @@ export const SalesReportScreen = () => {
               </div>
             ) : (
               <DailyTable>
-                {pageRows.map((d) => (
+                {daily.map((d) => (
                   <tr key={d.date}>
                     <td className="item-sub">{formatDate(d.date)}</td>
                     <td className="num tnum">{d.transactionCount}</td>
@@ -169,9 +160,9 @@ export const SalesReportScreen = () => {
 
           {!loading && (
             <Pagination
-              page={currentPage}
+              page={page}
               pageSize={pageSize}
-              totalCount={daily.length}
+              totalCount={totalCount}
               totalPages={totalPages}
               onPageChange={setPage}
             />

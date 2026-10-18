@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { useBestSellers } from '../hooks/useBestSellers';
 import { useDateRange } from '../../../hooks/useDateRange';
 import { ReportsTabs } from '../components/ReportsTabs';
 import { DateRangeControls } from '../../../components/DateRangeControls';
 import { Pagination } from '../../../components/Pagination';
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination';
 import { peso } from '../../../lib/format';
 
 const SKELETON_ROWS = Array.from({ length: 6 });
@@ -19,22 +17,19 @@ export const BestSellersScreen = () => {
     setCustomTo,
     range,
   } = useDateRange('month');
-  const { bestSellers, loading, error, refetch } = useBestSellers(range);
+  const {
+    bestSellers,
+    loading,
+    error,
+    refetch,
+    page,
+    setPage,
+    pageSize,
+    totalCount,
+    totalPages,
+  } = useBestSellers(range);
 
-  const pageSize = DEFAULT_PAGE_SIZE;
-  const [page, setPage] = useState(1);
-
-  const rangeKey = `${range.from ?? ''}|${range.to ?? ''}`;
-  const [prevRangeKey, setPrevRangeKey] = useState(rangeKey);
-  if (rangeKey !== prevRangeKey) {
-    setPrevRangeKey(rangeKey);
-    setPage(1);
-  }
-
-  const totalPages = Math.max(1, Math.ceil(bestSellers.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const offset = (currentPage - 1) * pageSize;
-  const pageRows = bestSellers.slice(offset, offset + pageSize);
+  const offset = (page - 1) * pageSize;
 
   return (
     <>
@@ -47,9 +42,7 @@ export const BestSellersScreen = () => {
               ? 'Ranking your products…'
               : error
                 ? 'Could not load best sellers.'
-                : `${bestSellers.length} product${
-                    bestSellers.length === 1 ? '' : 's'
-                  } sold in the selected period`}
+                : `${totalCount} product${totalCount === 1 ? '' : 's'} sold in the selected period`}
           </p>
         </div>
         <div className="page-actions">
@@ -119,7 +112,7 @@ export const BestSellersScreen = () => {
               </div>
             ) : (
               <BestSellersTable>
-                {pageRows.map((b, i) => (
+                {bestSellers.map((b, i) => (
                   <tr key={b.itemId}>
                     <td className="num tnum rank-cell">{offset + i + 1}</td>
                     <td>
@@ -142,9 +135,9 @@ export const BestSellersScreen = () => {
 
           {!loading && (
             <Pagination
-              page={currentPage}
+              page={page}
               pageSize={pageSize}
-              totalCount={bestSellers.length}
+              totalCount={totalCount}
               totalPages={totalPages}
               onPageChange={setPage}
             />

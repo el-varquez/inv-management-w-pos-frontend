@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { useExpenseReport } from '../hooks/useExpenseReport';
 import { useDateRange } from '../../../hooks/useDateRange';
 import { ReportsTabs } from '../components/ReportsTabs';
 import { DateRangeControls } from '../../../components/DateRangeControls';
 import { Pagination } from '../../../components/Pagination';
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination';
 import { peso, formatDate } from '../../../lib/format';
 
 const SKELETON_ROWS = Array.from({ length: 5 });
@@ -19,25 +17,18 @@ export const ExpenseReportScreen = () => {
     setCustomTo,
     range,
   } = useDateRange('month');
-  const { report, loading, error, refetch } = useExpenseReport(range);
-
-  const purchases = report?.purchases ?? [];
-  const pageSize = DEFAULT_PAGE_SIZE;
-  const [page, setPage] = useState(1);
-
-  const rangeKey = `${range.from ?? ''}|${range.to ?? ''}`;
-  const [prevRangeKey, setPrevRangeKey] = useState(rangeKey);
-  if (rangeKey !== prevRangeKey) {
-    setPrevRangeKey(rangeKey);
-    setPage(1);
-  }
-
-  const totalPages = Math.max(1, Math.ceil(purchases.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const pageRows = purchases.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const {
+    report,
+    items: purchases,
+    loading,
+    error,
+    refetch,
+    page,
+    setPage,
+    pageSize,
+    totalCount,
+    totalPages,
+  } = useExpenseReport(range);
 
   return (
     <>
@@ -50,9 +41,7 @@ export const ExpenseReportScreen = () => {
               ? 'Crunching the numbers…'
               : error
                 ? 'Could not load the expense report.'
-                : `${purchases.length} restock${
-                    purchases.length === 1 ? '' : 's'
-                  } in the selected period`}
+                : `${totalCount} restock${totalCount === 1 ? '' : 's'} in the selected period`}
           </p>
         </div>
         <div className="page-actions">
@@ -140,7 +129,7 @@ export const ExpenseReportScreen = () => {
               </div>
             ) : (
               <PurchasesTable>
-                {pageRows.map((p, i) => (
+                {purchases.map((p, i) => (
                   <tr key={`${p.date}-${p.itemName}-${i}`}>
                     <td className="item-sub">{formatDate(p.date)}</td>
                     <td>
@@ -160,9 +149,9 @@ export const ExpenseReportScreen = () => {
 
           {!loading && (
             <Pagination
-              page={currentPage}
+              page={page}
               pageSize={pageSize}
-              totalCount={purchases.length}
+              totalCount={totalCount}
               totalPages={totalPages}
               onPageChange={setPage}
             />

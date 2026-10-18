@@ -88,7 +88,7 @@ export const inventoryService = {
 
   getCountLines: async (
     id: string,
-    params: { page: number; pageSize: number }
+    params: ListParams
   ): Promise<Paged<InventoryCountLine>> => {
     const { data } = await api.get<Paged<InventoryCountLine>>(
       `/inventory/count/${id}/lines`,

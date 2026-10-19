@@ -7,7 +7,7 @@ export const useSukis = (term: string) => {
 
   const q = usePagedQuery<Paged<Suki>>(
     (p) => utangService.getSukis(trimmed ? { ...p, term: trimmed } : p),
-    { key: trimmed, fallbackError: 'Failed to load sukis.' },
+    { key: trimmed, scope: 'sukis', fallbackError: 'Failed to load sukis.' },
   );
   return { sukis: q.items, ...q };
 };

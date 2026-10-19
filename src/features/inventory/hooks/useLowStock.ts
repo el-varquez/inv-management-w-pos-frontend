@@ -7,6 +7,6 @@ export const useLowStock = (search?: string) => {
 
   return usePagedQuery<Paged<LowStockItem>>(
     (p) => inventoryService.getLowStock(term ? { ...p, search: term } : p),
-    { key: term ?? '', fallbackError: 'Failed to load low stock items.' },
+    { key: term ?? '', scope: 'low-stock', fallbackError: 'Failed to load low stock items.' },
   );
 };

@@ -1,17 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Paged } from '../types';
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination';
+import { STALE_AFTER_MS, queryCache } from '../lib/queryCache';
 import { getApiErrorMessage } from '../services/apiError';
 
 export interface PagedQueryOptions {
-  /** Serialized filters. A change clears the page cache and returns to page 1. */
+  /** Serialized filters. A change returns to page 1; pages are cached per key. */
   key?: string;
   fallbackError: string;
   /**
-   * Serve revisited pages from memory for the current screen visit.
+   * Serve revisited pages from memory.
    * Defaults to true; pass false for editable data such as stocktake lines.
    */
   cache?: boolean;
+  /**
+   * Namespace in the app-level cache (`src/lib/queryCache.ts`). With a scope, pages
+   * outlive the screen and are served stale-while-revalidate; without one the hook
+   * keeps a per-visit cache that dies with the component.
+   */
+  scope?: string;
 }
 
 export interface PagedQueryResult<R extends Paged<unknown>> {
@@ -30,19 +37,23 @@ export interface PagedQueryResult<R extends Paged<unknown>> {
 type Fetcher<R> = (params: { page: number; pageSize: number }) => Promise<R>;
 
 /**
- * Server-side paging with a per-visit page cache.
+ * Server-side paging with a page cache.
  *
- * Pages are cached under `key|page|pageSize`. The cache is cleared when the
- * key changes, on `refetch()` (which every mutation already calls) and when
- * the component unmounts. A cached page renders with `loading === false` and
- * no request. After every fetch the page is clamped to `totalPages`, so a
- * list that shrank never strands the user on an empty page.
+ * Pages are cached under `key|page|pageSize`, inside the shared `queryCache` under
+ * `scope` when one is given, else in a per-instance map. A cached page renders with
+ * `loading === false` and no request; a shared page older than `STALE_AFTER_MS` is
+ * refreshed in the background, and a failed background refresh leaves the cached
+ * rows and `error` untouched. `refetch()` (which every mutation already calls)
+ * clears the whole shared store and reloads the current page in the foreground.
+ * After every fetch the page is clamped to `totalPages`, so a list that shrank never
+ * strands the user on an empty page.
  */
 export const usePagedQuery = <R extends Paged<unknown>>(
   fetcher: Fetcher<R>,
   options: PagedQueryOptions,
 ): PagedQueryResult<R> => {
   const key = options.key ?? '';
+  const scope = options.scope;
   const pageSize = DEFAULT_PAGE_SIZE;
   const cacheEnabled = options.cache !== false;
 
@@ -53,8 +64,7 @@ export const usePagedQuery = <R extends Paged<unknown>>(
 
   const fetcherRef = useRef(fetcher);
   const fallbackRef = useRef(options.fallbackError);
-  const cacheRef = useRef(new Map<string, R>());
-  const lastKeyRef = useRef(key);
+  const localCacheRef = useRef(new Map<string, R>());
   const requestSeq = useRef(0);
 
   useEffect(() => {
@@ -68,50 +78,67 @@ export const usePagedQuery = <R extends Paged<unknown>>(
     setPage(1);
   }
 
-  const load = async (target: number, bypassCache: boolean) => {
-    const cacheKey = `${key}|${target}|${pageSize}`;
-    if (!bypassCache) {
-      const hit = cacheRef.current.get(cacheKey);
-      if (hit) {
-        requestSeq.current++; // an in-flight miss for another page must not overwrite this one
-        setData(hit);
-        setError(null);
-        setLoading(false);
-        return;
-      }
-    }
+  const cacheKeyFor = (target: number) => `${key}|${target}|${pageSize}`;
 
+  const readCache = (cacheKey: string): { data: R; at: number } | undefined => {
+    if (!cacheEnabled) return undefined;
+    if (scope) return queryCache.get<R>(`${scope}|${cacheKey}`);
+    const hit = localCacheRef.current.get(cacheKey);
+    return hit ? { data: hit, at: Date.now() } : undefined; // per-visit pages never go stale
+  };
+
+  const writeCache = (cacheKey: string, result: R) => {
+    if (!cacheEnabled) return;
+    if (scope) queryCache.set(`${scope}|${cacheKey}`, result);
+    else localCacheRef.current.set(cacheKey, result);
+  };
+
+  const fetchPage = async (target: number, background: boolean) => {
     const seq = ++requestSeq.current;
-    setLoading(true);
-    setError(null);
+    if (!background) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const result = await fetcherRef.current({ page: target, pageSize });
       if (seq !== requestSeq.current) return;
-      if (cacheEnabled) cacheRef.current.set(cacheKey, result);
+      writeCache(cacheKeyFor(target), result);
       setData(result);
       if (target > result.totalPages && result.totalPages >= 1) setPage(result.totalPages);
     } catch (err) {
       if (seq !== requestSeq.current) return;
-      setError(getApiErrorMessage(err, fallbackRef.current));
+      if (!background) setError(getApiErrorMessage(err, fallbackRef.current));
     } finally {
-      if (seq === requestSeq.current) setLoading(false);
+      if (seq === requestSeq.current && !background) setLoading(false);
     }
+  };
+
+  const load = async (target: number) => {
+    const hit = readCache(cacheKeyFor(target));
+    if (!hit) {
+      await fetchPage(target, false);
+      return;
+    }
+    requestSeq.current++; // an in-flight miss for another page must not overwrite this one
+    setData(hit.data);
+    setError(null);
+    setLoading(false);
+    if (Date.now() - hit.at > STALE_AFTER_MS) await fetchPage(target, true);
   };
 
   const refetch = async () => {
-    cacheRef.current.clear();
-    await load(page, true);
+    queryCache.clear();
+    localCacheRef.current.clear();
+    await fetchPage(page, false);
   };
 
-  /* eslint-disable react-hooks/exhaustive-deps */
+  // A cache hit is applied synchronously on purpose: the cached page must render in the same
+  // commit as the navigation, or every revisit would flash a skeleton.
+  /* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (lastKeyRef.current !== key) {
-      cacheRef.current.clear();
-      lastKeyRef.current = key;
-    }
-    load(page, false);
+    load(page);
   }, [key, page, pageSize]);
-  /* eslint-enable react-hooks/exhaustive-deps */
+  /* eslint-enable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect */
 
   return {
     data,

@@ -17,6 +17,7 @@ export const useProfitReport = (range?: DateRange, filters?: ProfitFilters) => {
     (p) => reportsService.getProfitReport({ from, to, categoryId, itemId, ...p }),
     {
       key: `${from ?? ''}|${to ?? ''}|${categoryId ?? ''}|${itemId ?? ''}`,
+      scope: 'report-profit',
       fallbackError: 'Failed to load profit report.',
     },
   );

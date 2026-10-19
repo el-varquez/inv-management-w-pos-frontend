@@ -8,7 +8,11 @@ export const useExpenseReport = (range?: DateRange) => {
 
   const q = usePagedQuery<ExpenseReport>(
     (p) => reportsService.getExpenseReport({ from, to, ...p }),
-    { key: `${from ?? ''}|${to ?? ''}`, fallbackError: 'Failed to load expense report.' },
+    {
+      key: `${from ?? ''}|${to ?? ''}`,
+      scope: 'report-expenses',
+      fallbackError: 'Failed to load expense report.',
+    },
   );
   return { report: q.data, ...q };
 };

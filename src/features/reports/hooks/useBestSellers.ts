@@ -8,7 +8,11 @@ export const useBestSellers = (range?: DateRange) => {
 
   const q = usePagedQuery<Paged<BestSeller>>(
     (p) => reportsService.getBestSellers({ from, to, ...p }),
-    { key: `${from ?? ''}|${to ?? ''}`, fallbackError: 'Failed to load best sellers.' },
+    {
+      key: `${from ?? ''}|${to ?? ''}`,
+      scope: 'report-best-sellers',
+      fallbackError: 'Failed to load best sellers.',
+    },
   );
   return { bestSellers: q.items, ...q };
 };

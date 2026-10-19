@@ -6,6 +6,7 @@ import { useLedgerEntries } from '../hooks/useLedgerEntries';
 import { useUtangSummary } from '../hooks/useUtangSummary';
 import { useDateRange } from '../../../hooks/useDateRange';
 import { useSettings } from '../../../hooks/useSettings';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { DateRangeControls } from '../../../components/DateRangeControls';
 import { Pagination } from '../../../components/Pagination';
 import { peso, formatDate } from '../../../lib/format';
@@ -53,7 +54,22 @@ const buildLedgerRows = (entries: UtangLedgerEntry[]): LedgerDisplayRow[] =>
 
 const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
   const { ledger, loading, error, refetch } = useSukiLedger(suki.id);
-  const entries = useLedgerEntries(suki.id);
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput.trim());
+  const filtersActive = Boolean(from || to || searchInput);
+  const clearFilters = () => {
+    setFrom('');
+    setTo('');
+    setSearchInput('');
+  };
+  // Date inputs give local calendar days; send each whole day in local time, `to` inclusive.
+  const entries = useLedgerEntries(suki.id, {
+    from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
+    to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
+    search: search || undefined,
+  });
   const refreshAll = () => {
     refetch();
     entries.refetch();
@@ -131,6 +147,55 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
         </div>
       )}
 
+      <div className="filter-bar card">
+        <div className="field">
+          <label htmlFor="ledger-from">From</label>
+          <input
+            id="ledger-from"
+            className="input"
+            type="date"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="ledger-to">To</label>
+          <input
+            id="ledger-to"
+            className="input"
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="ledger-search">Search</label>
+          <input
+            id="ledger-search"
+            className="input"
+            type="search"
+            placeholder="Invoice no., note or amount"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+        {filtersActive && (
+          <button
+            type="button"
+            className="btn btn-quiet btn-sm filter-clear"
+            onClick={clearFilters}
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+      {from && !entries.loading && !entries.error && entries.data && (
+        <p className="field-hint">
+          Opening balance on {formatDate(`${from}T00:00:00`)}:{' '}
+          {peso.format(entries.openingBalance)}
+        </p>
+      )}
+
       <div className="card table-wrap">
         {error || entries.error ? (
           <div className="state state-error">
@@ -148,9 +213,13 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
         ) : entries.totalCount === 0 ? (
           <div className="state">
             <div className="state-emoji">📒</div>
-            <div className="state-title">No entries yet</div>
+            <div className="state-title">
+              {filtersActive ? 'No entries match' : 'No entries yet'}
+            </div>
             <p className="state-msg">
-              Charges and collections from the register will appear here.
+              {filtersActive
+                ? 'Try a different period or search term.'
+                : 'Charges and collections from the register will appear here.'}
             </p>
           </div>
         ) : (
@@ -279,7 +348,7 @@ const LedgerView = ({ suki, onBack }: { suki: Suki; onBack: () => void }) => {
       {deleting && (
         <DeleteSukiModal
           suki={current}
-          hasEntries={entries.totalCount > 0}
+          hasEntries={entries.totalCount > 0 || filtersActive}
           onClose={() => setDeleting(false)}
           onDeleted={() => {
             setDeleting(false);

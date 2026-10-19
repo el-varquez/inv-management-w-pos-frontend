@@ -368,6 +368,11 @@ export interface UtangLedgerEntry {
   runningBalance: number | null;
 }
 
+/** A page of ledger entries plus the balance carried into the period's `from` (0 without one). */
+export interface LedgerEntriesPage extends Paged<UtangLedgerEntry> {
+  openingBalance: number;
+}
+
 export interface SukiLedger {
   id: string;
   name: string;

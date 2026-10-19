@@ -1,5 +1,5 @@
 import api from '../../../services/api';
-import type { Paged, Suki, SukiLedger, UtangSummary } from '../../../types';
+import type { Paged, Suki, SukiLedger, UtangLedgerEntry, UtangSummary } from '../../../types';
 
 export const utangService = {
   getSukis: async (params: {
@@ -13,6 +13,17 @@ export const utangService = {
 
   getLedger: async (id: string): Promise<SukiLedger> => {
     const { data } = await api.get<SukiLedger>(`/utang/sukis/${id}/ledger`);
+    return data;
+  },
+
+  getLedgerEntries: async (
+    id: string,
+    params: { page: number; pageSize: number },
+  ): Promise<Paged<UtangLedgerEntry>> => {
+    const { data } = await api.get<Paged<UtangLedgerEntry>>(
+      `/utang/sukis/${id}/ledger/entries`,
+      { params },
+    );
     return data;
   },
 

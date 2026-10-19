@@ -4,6 +4,7 @@ import type {
   ExpenseReport,
   ProfitReport,
   BestSeller,
+  Paged,
 } from '../../../types';
 
 export interface DateRange {
@@ -11,32 +12,28 @@ export interface DateRange {
   to?: string;
 }
 
+type PageParams = { page: number; pageSize: number };
+
 export const reportsService = {
-  getSalesReport: async (range?: DateRange): Promise<SalesReport> => {
-    const { data } = await api.get<SalesReport>('/reports/sales', {
-      params: range,
-    });
+  getSalesReport: async (params: DateRange & PageParams): Promise<SalesReport> => {
+    const { data } = await api.get<SalesReport>('/reports/sales', { params });
     return data;
   },
 
-  getExpenseReport: async (range?: DateRange): Promise<ExpenseReport> => {
-    const { data } = await api.get<ExpenseReport>('/reports/expenses', {
-      params: range,
-    });
+  getExpenseReport: async (params: DateRange & PageParams): Promise<ExpenseReport> => {
+    const { data } = await api.get<ExpenseReport>('/reports/expenses', { params });
     return data;
   },
 
   getProfitReport: async (
-    params?: DateRange & { categoryId?: string; itemId?: string }
+    params: DateRange & PageParams & { categoryId?: string; itemId?: string }
   ): Promise<ProfitReport> => {
     const { data } = await api.get<ProfitReport>('/reports/profit', { params });
     return data;
   },
 
-  getBestSellers: async (range?: DateRange): Promise<BestSeller[]> => {
-    const { data } = await api.get<BestSeller[]>('/reports/best-sellers', {
-      params: range,
-    });
+  getBestSellers: async (params: DateRange & PageParams): Promise<Paged<BestSeller>> => {
+    const { data } = await api.get<Paged<BestSeller>>('/reports/best-sellers', { params });
     return data;
   },
 };

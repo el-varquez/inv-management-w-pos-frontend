@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal } from '../../../components/Modal';
-import { SearchSelect } from '../../../components/SearchSelect';
+import { ItemSearchSelect } from './ItemSearchSelect';
 import { useItemComponents } from '../hooks/useItemComponents';
-import { useSellableItems } from '../hooks/useSellableItems';
 import { peso } from '../../../lib/format';
 import type { Item } from '../../../types';
 
@@ -12,14 +11,16 @@ interface Props {
   onSaved: () => void;
 }
 
+/** A recipe line. Name and cost ride along with the id because only a page of items is ever loaded. */
 interface Row {
   componentItemId: string;
+  componentItemName: string;
+  componentCostPrice: number;
   quantity: string;
 }
 
 export const ComponentsModal = ({ item, onClose, onSaved }: Props) => {
   const { components, load, save, loading, saving, error } = useItemComponents();
-  const { items: allItems, loading: itemsLoading } = useSellableItems();
   const [rows, setRows] = useState<Row[]>([]);
 
   useEffect(() => {
@@ -32,21 +33,16 @@ export const ComponentsModal = ({ item, onClose, onSaved }: Props) => {
     setRows(
       components.components.map((c) => ({
         componentItemId: c.componentItemId,
+        componentItemName: c.componentItemName,
+        componentCostPrice: c.componentCostPrice,
         quantity: String(c.quantity),
       }))
     );
   }, [components]);
 
-  const costById = useMemo(() => {
-    const map = new Map<string, number>();
-    allItems.forEach((i) => map.set(i.id, i.costPrice));
-    return map;
-  }, [allItems]);
-
   const totalCost = rows.reduce((sum, r) => {
-    const cost = costById.get(r.componentItemId) ?? 0;
     const qty = Number(r.quantity);
-    return sum + (qty > 0 ? cost * qty : 0);
+    return sum + (qty > 0 ? r.componentCostPrice * qty : 0);
   }, 0);
 
   const chosenIds = rows.map((r) => r.componentItemId).filter(Boolean);
@@ -56,17 +52,20 @@ export const ComponentsModal = ({ item, onClose, onSaved }: Props) => {
   );
   const canSave = !hasInvalidRow && !hasDuplicate && !saving;
 
-  const optionsFor = (current: string) =>
-    allItems
-      .filter(
-        (i) =>
-          i.id !== item.id &&
-          (i.id === current || !chosenIds.includes(i.id))
-      )
-      .map((i) => ({ value: i.id, label: i.name }));
+  /** The parent itself and every other row's pick are kept out of a row's options. */
+  const excludeIdsFor = (index: number) => [
+    item.id,
+    ...rows
+      .filter((_, i) => i !== index)
+      .map((r) => r.componentItemId)
+      .filter(Boolean),
+  ];
 
   const addRow = () =>
-    setRows((prev) => [...prev, { componentItemId: '', quantity: '1' }]);
+    setRows((prev) => [
+      ...prev,
+      { componentItemId: '', componentItemName: '', componentCostPrice: 0, quantity: '1' },
+    ]);
 
   const removeRow = (index: number) =>
     setRows((prev) => prev.filter((_, i) => i !== index));
@@ -103,7 +102,7 @@ export const ComponentsModal = ({ item, onClose, onSaved }: Props) => {
         </div>
       )}
 
-      {loading || itemsLoading ? (
+      {loading ? (
         <div className="state">
           <span className="spinner" aria-hidden="true" />
           <p className="state-msg">Loading recipe…</p>
@@ -120,11 +119,19 @@ export const ComponentsModal = ({ item, onClose, onSaved }: Props) => {
             <div className="component-rows">
               {rows.map((row, index) => (
                 <div className="component-row" key={index}>
-                  <SearchSelect
+                  <ItemSearchSelect
                     value={row.componentItemId}
-                    onChange={(v) => updateRow(index, { componentItemId: v })}
-                    options={optionsFor(row.componentItemId)}
-                    placeholder="Pick a component…"
+                    selectedLabel={row.componentItemName}
+                    onChange={(id, picked) =>
+                      updateRow(index, {
+                        componentItemId: id,
+                        componentItemName: picked?.name ?? '',
+                        componentCostPrice: picked?.costPrice ?? 0,
+                      })
+                    }
+                    excludeIds={excludeIdsFor(index)}
+                    activeOnly
+                    placeholder="Search for a component…"
                   />
                   <input
                     className="input"

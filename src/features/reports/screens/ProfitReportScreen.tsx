@@ -2,12 +2,11 @@ import { useState } from 'react';
 import { useProfitReport } from '../hooks/useProfitReport';
 import { useDateRange } from '../../../hooks/useDateRange';
 import { useCategories } from '../../items/hooks/useCategories';
-import { useSellableItems } from '../../items/hooks/useSellableItems';
+import { ItemSearchSelect } from '../../items/components/ItemSearchSelect';
 import { ReportsTabs } from '../components/ReportsTabs';
 import { DateRangeControls } from '../../../components/DateRangeControls';
 import { Pagination } from '../../../components/Pagination';
 import { SearchSelect } from '../../../components/SearchSelect';
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination';
 import { peso } from '../../../lib/format';
 
 export const ProfitReportScreen = () => {
@@ -22,42 +21,29 @@ export const ProfitReportScreen = () => {
   } = useDateRange('month');
 
   const { categories } = useCategories();
-  const { items } = useSellableItems();
 
   const [categoryId, setCategoryId] = useState('');
   const [itemId, setItemId] = useState('');
+  const [itemName, setItemName] = useState('');
 
-  const { report, loading, error, refetch } = useProfitReport(range, {
-    categoryId,
-    itemId,
-  });
-
-  const itemOptions = categoryId
-    ? items.filter((i) => i.categoryId === categoryId)
-    : items;
+  const {
+    report,
+    items: details,
+    loading,
+    error,
+    refetch,
+    page,
+    setPage,
+    pageSize,
+    totalCount,
+    totalPages,
+  } = useProfitReport(range, { categoryId, itemId });
 
   const onCategoryChange = (value: string) => {
     setCategoryId(value);
     setItemId('');
+    setItemName('');
   };
-
-  const details = report?.details ?? [];
-  const pageSize = DEFAULT_PAGE_SIZE;
-  const [page, setPage] = useState(1);
-
-  const resetKey = `${range.from ?? ''}|${range.to ?? ''}|${categoryId}|${itemId}`;
-  const [prevResetKey, setPrevResetKey] = useState(resetKey);
-  if (resetKey !== prevResetKey) {
-    setPrevResetKey(resetKey);
-    setPage(1);
-  }
-
-  const totalPages = Math.max(1, Math.ceil(details.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const pageRows = details.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
 
   const filters = (
     <>
@@ -74,11 +60,15 @@ export const ProfitReportScreen = () => {
       </div>
       <div className="field">
         <label htmlFor="filter-item">Item</label>
-        <SearchSelect
+        <ItemSearchSelect
           id="filter-item"
           value={itemId}
-          onChange={setItemId}
-          options={itemOptions.map((i) => ({ value: i.id, label: i.name }))}
+          selectedLabel={itemName}
+          onChange={(id, item) => {
+            setItemId(id);
+            setItemName(item?.name ?? '');
+          }}
+          categoryId={categoryId || undefined}
           allLabel="All items"
           placeholder="Search items…"
         />
@@ -207,7 +197,7 @@ export const ProfitReportScreen = () => {
               </div>
             ) : (
               <ProfitTable>
-                {pageRows.map((d) => (
+                {details.map((d) => (
                   <tr key={d.itemId}>
                     <td>
                       <div className="item-name">{d.itemName}</div>
@@ -231,9 +221,9 @@ export const ProfitReportScreen = () => {
 
           {!loading && (
             <Pagination
-              page={currentPage}
+              page={page}
               pageSize={pageSize}
-              totalCount={details.length}
+              totalCount={totalCount}
               totalPages={totalPages}
               onPageChange={setPage}
             />

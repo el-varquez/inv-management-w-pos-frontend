@@ -3,6 +3,7 @@ import {
   useInventoryHistory,
   type InventoryHistoryFilters,
 } from '../hooks/useInventoryHistory';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { InventoryTabs } from '../components/InventoryTabs';
 import { Pagination } from '../../../components/Pagination';
 import { SearchSelect } from '../../../components/SearchSelect';
@@ -22,6 +23,8 @@ const MOVEMENT_TYPES: { value: StockMovementType | ''; label: string }[] = [
 
 export const InventoryHistoryScreen = () => {
   const [filters, setFilters] = useState<InventoryHistoryFilters>({});
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput.trim());
   const {
     history,
     loading,
@@ -32,10 +35,16 @@ export const InventoryHistoryScreen = () => {
     pageSize,
     totalCount,
     totalPages,
-  } = useInventoryHistory(filters);
+  } = useInventoryHistory({ ...filters, search: search || undefined });
 
   const update = (patch: Partial<InventoryHistoryFilters>) =>
     setFilters((f) => ({ ...f, ...patch }));
+
+  const hasFilters = Boolean(filters.from || filters.to || filters.type || searchInput);
+  const clearFilters = () => {
+    setFilters({});
+    setSearchInput('');
+  };
 
   return (
     <>
@@ -61,6 +70,17 @@ export const InventoryHistoryScreen = () => {
       <InventoryTabs />
 
       <div className="filter-bar card">
+        <div className="field">
+          <label htmlFor="search">Search</label>
+          <input
+            id="search"
+            className="input"
+            type="search"
+            placeholder="Name, code or barcode"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
         <div className="field">
           <label htmlFor="from">From</label>
           <input
@@ -94,11 +114,11 @@ export const InventoryHistoryScreen = () => {
             }))}
           />
         </div>
-        {(filters.from || filters.to || filters.type) && (
+        {hasFilters && (
           <button
             type="button"
             className="btn btn-quiet btn-sm filter-clear"
-            onClick={() => setFilters({})}
+            onClick={clearFilters}
           >
             Clear filters
           </button>
@@ -144,6 +164,11 @@ export const InventoryHistoryScreen = () => {
             <p className="state-msg">
               No stock movements match the current filters.
             </p>
+            {hasFilters && (
+              <button className="btn btn-ghost" onClick={clearFilters}>
+                Clear filters
+              </button>
+            )}
           </div>
         ) : (
           <HistoryTable>

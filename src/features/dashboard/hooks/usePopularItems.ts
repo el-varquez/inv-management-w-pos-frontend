@@ -11,6 +11,9 @@ const WINDOW_DAYS: Record<PopularWindow, number> = {
   year: 365,
 };
 
+/** The card shows the top 8, so it asks the API for exactly one page of 8. */
+const POPULAR_PAGE_SIZE = 8;
+
 export const usePopularItems = (window: PopularWindow) => {
   const [items, setItems] = useState<BestSeller[]>([]);
   const [loading, setLoading] = useState(false);
@@ -22,8 +25,12 @@ export const usePopularItems = (window: PopularWindow) => {
     try {
       const from = new Date();
       from.setDate(from.getDate() - WINDOW_DAYS[window]);
-      const data = await dashboardService.getBestSellers({ from: from.toISOString() });
-      setItems(data.slice(0, 8));
+      const data = await dashboardService.getBestSellers({
+        from: from.toISOString(),
+        page: 1,
+        pageSize: POPULAR_PAGE_SIZE,
+      });
+      setItems(data.items);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to load popular items.'));
     } finally {

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useInventoryValuation } from '../hooks/useInventoryValuation';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { InventoryTabs } from '../components/InventoryTabs';
 import { Pagination } from '../../../components/Pagination';
 import { peso, formatDateTime } from '../../../lib/format';
@@ -6,6 +8,8 @@ import { peso, formatDateTime } from '../../../lib/format';
 const SKELETON_ROWS = Array.from({ length: 5 });
 
 export const InventoryValuationScreen = () => {
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput.trim());
   const {
     valuation,
     items,
@@ -17,7 +21,7 @@ export const InventoryValuationScreen = () => {
     pageSize,
     totalCount,
     totalPages,
-  } = useInventoryValuation();
+  } = useInventoryValuation(search || undefined);
 
   return (
     <>
@@ -44,10 +48,35 @@ export const InventoryValuationScreen = () => {
 
       <InventoryTabs />
 
+      <div className="filter-bar card">
+        <div className="field">
+          <label htmlFor="search">Search</label>
+          <input
+            id="search"
+            className="input"
+            type="search"
+            placeholder="Name, code or barcode"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+        {searchInput !== '' && (
+          <button
+            type="button"
+            className="btn btn-quiet btn-sm filter-clear"
+            onClick={() => setSearchInput('')}
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
       {valuation && !loading && !error && (
         <div className="stat-row">
           <div className="card stat-card">
-            <div className="stat-label">Total stock value</div>
+            <div className="stat-label">
+              {search ? 'Stock value of matches' : 'Total stock value'}
+            </div>
             <div className="stat-value tnum">
               {peso.format(valuation.totalValue)}
             </div>
@@ -94,11 +123,22 @@ export const InventoryValuationScreen = () => {
             ))}
           </ValuationTable>
         ) : !valuation || items.length === 0 ? (
-          <div className="state">
-            <div className="state-emoji">💰</div>
-            <div className="state-title">Nothing to value</div>
-            <p className="state-msg">Add items and stock to see valuation.</p>
-          </div>
+          search !== '' ? (
+            <div className="state">
+              <div className="state-emoji">🔍</div>
+              <div className="state-title">No items match your search</div>
+              <p className="state-msg">Try a different name, item code or barcode.</p>
+              <button className="btn btn-ghost" onClick={() => setSearchInput('')}>
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <div className="state">
+              <div className="state-emoji">💰</div>
+              <div className="state-title">Nothing to value</div>
+              <p className="state-msg">Add items and stock to see valuation.</p>
+            </div>
+          )
         ) : (
           <ValuationTable>
             {items.map((i) => (

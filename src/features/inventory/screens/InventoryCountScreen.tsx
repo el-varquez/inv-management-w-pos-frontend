@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { InventoryTabs } from '../components/InventoryTabs';
 import { Pagination } from '../../../components/Pagination';
 import { useInventoryCount } from '../hooks/useInventoryCount';
 import { useInventoryCounts } from '../hooks/useInventoryCounts';
 import { usePagedQuery } from '../../../hooks/usePagedQuery';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { inventoryService } from '../services/inventoryService';
 import { signed } from '../../../lib/format';
 import type { InventoryCount, InventoryCountLine, Paged } from '../../../types';
@@ -31,13 +32,23 @@ export const InventoryCountScreen = () => {
   const [readOnly, setReadOnly] = useState(false);
 
   // Lines are editable, so they are never served from the page cache.
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebouncedValue(searchInput.trim());
+  /** The term the lines are filtered by. It only advances once this page's edits are saved. */
+  const [search, setSearch] = useState('');
+  /** `search` mirrored for async code, the latest term the user wants, a re-entrancy guard, and the freshest autosave. */
+  const appliedSearchRef = useRef('');
+  const wantedSearchRef = useRef('');
+  const applyingSearchRef = useRef(false);
+  const syncDirtyRef = useRef<() => Promise<boolean>>(() => Promise.resolve(true));
+
   const countId = count?.id ?? '';
   const lines = usePagedQuery<Paged<InventoryCountLine>>(
     (p) =>
       countId
-        ? inventoryService.getCountLines(countId, p)
+        ? inventoryService.getCountLines(countId, search ? { ...p, search } : p)
         : Promise.resolve({ items: [], page: 1, pageSize: p.pageSize, totalCount: 0, totalPages: 1 }),
-    { key: countId, cache: false, fallbackError: 'Failed to load count lines.' }
+    { key: `${countId}|${search}`, cache: false, fallbackError: 'Failed to load count lines.' }
   );
 
   // Seed the editable values and the server baseline from every loaded page.
@@ -63,6 +74,10 @@ export const InventoryCountScreen = () => {
     if (!loaded) return;
     setActuals({});
     setBaseline({});
+    setSearchInput('');
+    setSearch('');
+    appliedSearchRef.current = '';
+    wantedSearchRef.current = '';
     setCount(loaded);
     setNotes(loaded.notes ?? '');
     setReadOnly(viewOnly);
@@ -134,6 +149,40 @@ export const InventoryCountScreen = () => {
     if (await syncDirty()) lines.setPage(p);
   };
 
+  /**
+   * Like a page change: a new term applies only after this page's dirty lines are saved.
+   * The field stays enabled while saving; a term typed meanwhile is picked up by the
+   * running loop, so the last term the user wanted always wins. On a failed save the
+   * field reverts to the term in effect and the error banner shows.
+   */
+  const applyWantedSearch = async () => {
+    if (applyingSearchRef.current) return;
+    applyingSearchRef.current = true;
+    try {
+      while (wantedSearchRef.current !== appliedSearchRef.current) {
+        const next = wantedSearchRef.current;
+        if (await syncDirtyRef.current()) {
+          appliedSearchRef.current = next;
+          setSearch(next);
+        } else {
+          wantedSearchRef.current = appliedSearchRef.current;
+          setSearchInput(appliedSearchRef.current);
+        }
+      }
+    } finally {
+      applyingSearchRef.current = false;
+    }
+  };
+
+  useEffect(() => {
+    syncDirtyRef.current = syncDirty;
+  });
+
+  useEffect(() => {
+    wantedSearchRef.current = debouncedSearch;
+    void applyWantedSearch();
+  }, [debouncedSearch]);
+
   const handleSave = () => syncDirty();
 
   const handleSubmit = async () => {
@@ -146,6 +195,10 @@ export const InventoryCountScreen = () => {
     setCount(null);
     setActuals({});
     setBaseline({});
+    setSearchInput('');
+    setSearch('');
+    appliedSearchRef.current = '';
+    wantedSearchRef.current = '';
     setNotes('');
     setMode('landing');
     counts.refetch();
@@ -204,10 +257,41 @@ export const InventoryCountScreen = () => {
             {error ?? lines.error}
           </div>
         )}
+        <div className="filter-bar card">
+          <div className="field">
+            <label htmlFor="line-search">Search</label>
+            <input
+              id="line-search"
+              className="input"
+              type="search"
+              placeholder="Name, code or barcode"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </div>
+          {searchInput !== '' && (
+            <button
+              type="button"
+              className="btn btn-quiet btn-sm filter-clear"
+              onClick={() => setSearchInput('')}
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
         <div className="card table-wrap">
           {lines.loading && rows.length === 0 ? (
             <div className="state">
               <span className="spinner spinner-dark" aria-hidden="true" />
+            </div>
+          ) : rows.length === 0 && search !== '' ? (
+            <div className="state">
+              <div className="state-emoji">🔍</div>
+              <div className="state-title">No lines match your search</div>
+              <p className="state-msg">Try a different name, item code or barcode.</p>
+              <button className="btn btn-ghost" onClick={() => setSearchInput('')}>
+                Clear filters
+              </button>
             </div>
           ) : (
             <table className="ledger">

@@ -6,7 +6,7 @@ import type { Paged, UtangLedgerEntry } from '../../../types';
 export const useLedgerEntries = (sukiId: string) => {
   const q = usePagedQuery<Paged<UtangLedgerEntry>>(
     (p) => utangService.getLedgerEntries(sukiId, p),
-    { key: sukiId, fallbackError: 'Failed to load ledger entries.' },
+    { key: sukiId, scope: 'ledger-entries', fallbackError: 'Failed to load ledger entries.' },
   );
   return { entries: q.items, ...q };
 };

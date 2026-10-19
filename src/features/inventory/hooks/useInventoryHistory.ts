@@ -27,6 +27,7 @@ export const useInventoryHistory = (filters?: InventoryHistoryFilters) => {
     },
     {
       key: `${from ?? ''}|${to ?? ''}|${type ?? ''}|${search ?? ''}`,
+      scope: 'history',
       fallbackError: 'Failed to load history.',
     },
   );

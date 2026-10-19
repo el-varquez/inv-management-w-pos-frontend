@@ -19,6 +19,10 @@ export const useItems = (filters?: ItemFilters) => {
         ...(isComposite === undefined ? {} : { isComposite }),
         ...(search ? { search } : {}),
       }),
-    { key: `${isComposite ?? ''}|${search ?? ''}`, fallbackError: 'Failed to load items.' },
+    {
+      key: `${isComposite ?? ''}|${search ?? ''}`,
+      scope: 'items',
+      fallbackError: 'Failed to load items.',
+    },
   );
 };

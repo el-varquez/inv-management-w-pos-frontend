@@ -7,7 +7,7 @@ export const useStockLevels = (search?: string) => {
 
   const q = usePagedQuery<Paged<StockLevel>>(
     (p) => inventoryService.getStockLevels(term ? { ...p, search: term } : p),
-    { key: term ?? '', fallbackError: 'Failed to load stock levels.' },
+    { key: term ?? '', scope: 'stock-levels', fallbackError: 'Failed to load stock levels.' },
   );
   return { stockLevels: q.items, ...q };
 };

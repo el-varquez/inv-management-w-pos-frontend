@@ -8,7 +8,11 @@ export const useSalesReport = (range?: DateRange) => {
 
   const q = usePagedQuery<SalesReport>(
     (p) => reportsService.getSalesReport({ from, to, ...p }),
-    { key: `${from ?? ''}|${to ?? ''}`, fallbackError: 'Failed to load sales report.' },
+    {
+      key: `${from ?? ''}|${to ?? ''}`,
+      scope: 'report-sales',
+      fallbackError: 'Failed to load sales report.',
+    },
   );
   return { report: q.data, ...q };
 };

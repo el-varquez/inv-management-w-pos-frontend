@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { queryCache } from '../lib/queryCache';
 
 interface AuthState {
   token: string | null;
@@ -14,7 +15,12 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       user: null,
       setAuth: (token, user) => set({ token, user }),
-      logout: () => set({ token: null, user: null }),
+      // Cached pages belong to the session that loaded them; the 401 interceptor
+      // routes through here too, so an expired token also empties the cache.
+      logout: () => {
+        queryCache.clear();
+        set({ token: null, user: null });
+      },
     }),
     { name: 'auth-storage' }
   )

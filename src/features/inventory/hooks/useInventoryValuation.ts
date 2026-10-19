@@ -7,7 +7,7 @@ export const useInventoryValuation = (search?: string) => {
 
   const q = usePagedQuery<InventoryValuation>(
     (p) => inventoryService.getValuation(term ? { ...p, search: term } : p),
-    { key: term ?? '', fallbackError: 'Failed to load valuation.' },
+    { key: term ?? '', scope: 'valuation', fallbackError: 'Failed to load valuation.' },
   );
   return { valuation: q.data, ...q };
 };
